@@ -1,7 +1,15 @@
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.util.ServiceLoader;
 
-import com.versusoft.packages.ooo.odt2daisy.Odt2Daisy;
+import org.daisy.pipeline.script.BoundScript;
+import org.daisy.pipeline.script.ScriptRegistry;
+import org.daisy.pipeline.job.Job;
+import org.daisy.pipeline.job.JobFactory;
+import org.daisy.pipeline.job.JobResult;
 
 public class main {
 
@@ -43,34 +51,44 @@ public class main {
 		}
 		if (args.length != 2)
 			throw new IllegalArgumentException("expected 2 arguments");
-		File odt = new File(args[0]).getAbsoluteFile();
-		File dtb = new File(args[1]).getAbsoluteFile();
-		if (!odt.exists())
-			throw new IllegalArgumentException("file does not exist: " + odt);
-		if (dtb.exists())
-			throw new IllegalArgumentException("file exists: " + dtb);
-		File imagesDir = new File(dtb.getParentFile(), dtb.getName() + ".images");
-		if (imagesDir.exists())
-			if (!imagesDir.isDirectory())
-				throw new IllegalArgumentException("file is not a directory: " + imagesDir);
-			else if (imagesDir.list().length == 0)
-				throw new IllegalArgumentException("directory is not empty: " + imagesDir);
+		File source = new File(args[0]).getAbsoluteFile();
+		File outputDir = new File(args[1]).getAbsoluteFile();
+		if (!source.exists())
+			throw new IllegalArgumentException("file does not exist: " + source);
+		if (outputDir.exists())
+			if (!outputDir.isDirectory())
+				throw new IllegalArgumentException("file exists: " + outputDir);
+			else if (outputDir.listFiles().length > 0)
+				throw new IllegalArgumentException("directory is not empty: " + outputDir);
+		boolean success = false;
 		try {
-			Odt2Daisy odt2daisy = new Odt2Daisy(odt.getPath());
-			odt2daisy.init();
-			odt2daisy.setUidParam("no-uid");
-			odt2daisy.setWriteCSSParam(false);
-			odt2daisy.paginationProcessing();
-			odt2daisy.correctionProcessing();
-			dtb.getParentFile().mkdirs();
-			odt2daisy.convertAsDTBook(dtb.getPath(), imagesDir.getName());
-			if (!new Odt2Daisy(null).validateDTD(dtb.getPath())) {
-				System.err.println("produced invalid DTBook: " + dtb);
-				System.exit(1);
+			ScriptRegistry scriptRegistry = ServiceLoader.load(ScriptRegistry.class).iterator().next();
+			BoundScript.Builder boundScript = new BoundScript.Builder(scriptRegistry.getScript("odt-to-dtbook").load())
+			                                                 .withInput("source", source);
+			JobFactory jobFactory = ServiceLoader.load(JobFactory.class).iterator().next();
+			try (Job job = jobFactory.newJob(boundScript.build()).build().get()) {
+				job.run();
+				if (success = (job.getStatus() == Job.Status.SUCCESS)) {
+					for (JobResult r : job.getResults().getResults("result")) {
+						File f = new File(outputDir, r.strip().getIdx());
+						if (f.exists())
+							throw new IllegalStateException("file exists: " + f); // should normally not happen
+						f.getParentFile().mkdirs();
+						try (InputStream is = r.asStream();
+						     OutputStream os = new FileOutputStream(f)) {
+							byte data[] = new byte[1024];
+							int read;
+							while ((read = is.read(data)) != -1)
+								os.write(data, 0, read);
+						}
+					}
+				}
 			}
 		} catch (Throwable e) {
 			throw new IllegalStateException("unexpected error, contact maintainer", e);
 		}
+		if (!success)
+			throw new RuntimeException("Job did not succeed");
 	}
 
 	private static int getJavaVersion() {

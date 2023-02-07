@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:description xmlns:x="http://www.daisy.org/ns/xprocspec"
+               xmlns:px="http://www.daisy.org/ns/pipeline/xproc"
+               xmlns:d="http://www.daisy.org/ns/pipeline/data"
+               script="odt2daisy.xpl">
+
+  <x:scenario label="000100_headings">
+    <x:call step="px:odt2daisy">
+      <x:option name="source" select="resolve-uri('lib/odt2daisy/test/com/versusoft/packages/ooo/odt2daisy/resources/general/000100_headings.odt')"/>
+      <x:option name="output-dir" select="resolve-uri('000100_headings/',$temp-dir)"/>
+    </x:call>
+    <x:context label="the result.fileset port">
+      <x:document type="port" port="result.fileset"/>
+    </x:context>
+    <x:expect label="the fileset"
+              type="custom" href="http://www.daisy.org/pipeline/modules/fileset-utils/library.xpl" step="x:fileset-compare">
+      <x:document type="inline" base-uri="temp-dir">
+        <d:fileset>
+          <d:file href="000100_headings/000100_headings.xml" media-type="application/x-dtbook+xml"/>
+        </d:fileset>
+      </x:document>
+    </x:expect>
+    <x:context label="the result.in-memory port">
+      <x:document type="port" port="result.in-memory"/>
+    </x:context>
+    <x:expect label="the expected DTBook" type="compare">
+      <x:document type="file" href="lib/odt2daisy/test/com/versusoft/packages/ooo/odt2daisy/resources/general/000100_headings.odt.daisy.xml"/>
+    </x:expect>
+  </x:scenario>
+
+</x:description>

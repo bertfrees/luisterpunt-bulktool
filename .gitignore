@@ -1,6 +1,11 @@
 .DS_Store
+/lib/*.jar
 /main.jar
 /main.class
+/odt2daisy.class
+/odt2daisy$*.class
+/scripts.class
+/scripts$*.class
 /dist/
 /dist-check/
 /OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8/
