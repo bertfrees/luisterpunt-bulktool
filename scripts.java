@@ -14,4 +14,14 @@ public final class scripts {
 			         odtToDTBook.class);
 		}
 	}
+
+	public static class textToEbraille extends XProcScriptService {
+
+		public textToEbraille() {
+			activate(ImmutableMap.of(SCRIPT_URL,     "/text-to-ebraille.xpl",
+			                         SCRIPT_ID,      "text-to-ebraille",
+			                         SCRIPT_VERSION, "1.0.0"),
+			         textToEbraille.class);
+		}
+	}
 }

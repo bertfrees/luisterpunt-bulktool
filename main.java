@@ -49,10 +49,20 @@ public class main {
 				throw new IllegalStateException("unexpected error, contact maintainer", e);
 			}
 		}
-		if (args.length != 2)
-			throw new IllegalArgumentException("expected 2 arguments");
-		File source = new File(args[0]).getAbsoluteFile();
-		File outputDir = new File(args[1]).getAbsoluteFile();
+		if (args.length < 1)
+			throw new IllegalArgumentException("expected at least one argument");
+		String command = args[0];
+		if ("dtbook".equals(command)) {
+			if (args.length != 3)
+				throw new IllegalArgumentException("expected 3 arguments");
+		} else if ("ebraille".equals(command)) {
+			if (args.length != 3)
+				throw new IllegalArgumentException("expected 3 arguments");
+		} else {
+			throw new IllegalArgumentException("command '" + command + "' not recognized");
+		}
+		File source = new File(args[1]).getAbsoluteFile();
+		File outputDir = new File(args[2]).getAbsoluteFile();
 		if (!source.exists())
 			throw new IllegalArgumentException("file does not exist: " + source);
 		if (outputDir.exists())
@@ -63,8 +73,12 @@ public class main {
 		boolean success = false;
 		try {
 			ScriptRegistry scriptRegistry = ServiceLoader.load(ScriptRegistry.class).iterator().next();
-			BoundScript.Builder boundScript = new BoundScript.Builder(scriptRegistry.getScript("odt-to-dtbook").load())
-			                                                 .withInput("source", source);
+			BoundScript.Builder boundScript = "dtbook".equals(command)
+				? new BoundScript.Builder(scriptRegistry.getScript("odt-to-dtbook").load())
+				                 .withInput("source", source)
+				: new BoundScript.Builder(scriptRegistry.getScript("text-to-ebraille").load())
+				                .withInput("source", source)
+				                .withInput("stylesheet", main.class.getResource("/braille.css"));
 			JobFactory jobFactory = ServiceLoader.load(JobFactory.class).iterator().next();
 			try (Job job = jobFactory.newJob(boundScript.build()).build().get()) {
 				job.run();

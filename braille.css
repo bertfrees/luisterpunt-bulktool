@@ -1,0 +1,42 @@
+html, address,
+blockquote,
+body, dd, div,
+dl, dt, fieldset, form,
+frame, frameset,
+h1, h2, h3, h4,
+h5, h6, noframes,
+ol, p, ul, center,
+dir, hr, menu, pre,
+table,
+tr,
+thead,
+tbody,
+tfoot,
+td, th,
+caption,
+button, textarea,
+input, select {
+	display: block
+}
+
+head {
+	display: none
+}
+
+@text-transform {
+	system: braille;
+	language: nl;
+	type: literary;
+}
+
+em, i {
+	text-transform: -louis-italic;
+}
+
+strong, b {
+	text-transform: -louis-bold;
+}
+
+u {
+	text-transform: -louis-underline;
+}
