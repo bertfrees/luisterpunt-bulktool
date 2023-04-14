@@ -56,8 +56,8 @@ public class main {
 			if (args.length != 3)
 				throw new IllegalArgumentException("expected 3 arguments");
 		} else if ("ebraille".equals(command)) {
-			if (args.length != 3)
-				throw new IllegalArgumentException("expected 3 arguments");
+			if (args.length != 4)
+				throw new IllegalArgumentException("expected 4 arguments");
 		} else {
 			throw new IllegalArgumentException("command '" + command + "' not recognized");
 		}
@@ -78,7 +78,8 @@ public class main {
 				                 .withInput("source", source)
 				: new BoundScript.Builder(scriptRegistry.getScript("text-to-ebraille").load())
 				                .withInput("source", source)
-				                .withInput("stylesheet", main.class.getResource("/braille.css"));
+				                .withInput("stylesheet", main.class.getResource("/braille.scss"))
+				                .withOption("dots", args[3]);
 			JobFactory jobFactory = ServiceLoader.load(JobFactory.class).iterator().next();
 			try (Job job = jobFactory.newJob(boundScript.build()).build().get()) {
 				job.run();

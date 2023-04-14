@@ -23,10 +23,12 @@ head {
 	display: none
 }
 
+$dots: 6 !default;
+
 @text-transform {
 	system: braille;
 	language: nl;
-	type: literary;
+	type: if($dots == 6, literary, computer);
 }
 
 em, i {

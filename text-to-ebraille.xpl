@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <p:declare-step xmlns:p="http://www.w3.org/ns/xproc" version="1.0"
                 xmlns:px="http://www.daisy.org/ns/pipeline/xproc"
+                xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns:d="http://www.daisy.org/ns/pipeline/data"
                 xmlns:css="http://www.daisy.org/ns/pipeline/braille-css"
                 type="px:text-to-ebraille">
 
 	<p:option name="source" required="true" px:type="anyFileURI" px:media-type="application/vnd.oasis.opendocument.text application/x-dtbook+xml"/>
 	<p:option name="stylesheet" required="false" select="''" px:sequence="true" px:separator=" " px:type="anyFileURI" px:media-type="text/css text/x-scss"/>
+	<p:option name="dots" required="false" select="'6'" px:type="xs:integer"/>
 	<p:option name="temp-dir" required="true" px:output="temp" px:type="anyDirURI"/>
 	<p:option name="result" required="true" px:output="result" px:type="anyDirURI" px:media-type="application/xhtml+xml"/>
 
@@ -107,6 +109,7 @@
 			<p:variable name="lang" select="(/*/@xml:lang,/*/@lang,'und')[1]"/>
 			<px:apply-stylesheets type="text/css text/x-scss" media="embossed">
 				<p:with-option name="stylesheets" select="$stylesheet"/>
+				<p:with-param port="parameters" name="dots" select="$dots"/>
 			</px:apply-stylesheets>
 			<px:transform name="transform">
 				<p:with-option name="query" select="concat('(input:html)(input:css)(output:html)(output:braille)',

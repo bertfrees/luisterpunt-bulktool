@@ -114,7 +114,7 @@ main.jar : classpath.txt \
            META-INF/services/org.daisy.common.xproc.calabash.XProcStepProvider \
            META-INF/services/org.daisy.pipeline.script.XProcScriptService \
            odt-to-dtbook.xpl text-to-ebraille.xpl odt2daisy.xpl\
-           braille.css
+           braille.scss
 	exec("jar cvfem $@ main $^".split("\\s+"));
 
 .INTERMEDIATE : classpath.txt
@@ -202,7 +202,8 @@ $(EBRAILLE) : ebraille/% : dtb/%
 	Job job = jobFactory.newJob(                                                                   \
 		new BoundScript.Builder(scriptRegistry.getScript("text-to-ebraille").load())               \
 		               .withInput("source", new File("$<", "$(notdir $<).xml").getAbsoluteFile())  \
-		               .withInput("stylesheet", new File("braille.css").getAbsoluteFile())         \
+		               .withInput("stylesheet", new File("braille.scss").getAbsoluteFile())        \
+		               .withOption("dots", "8")                                                    \
 		               .build()).build().get();                                                    \
 	job.run();                                                                                     \
 	if (job.getStatus() != Job.Status.SUCCESS) {                                                   \
@@ -238,7 +239,9 @@ dist-check : dist/mac
 	                                               "dist-check/dtb/000600_simple_image");
 	exec("$</jre/bin/java", "-jar", "$</main.jar", "ebraille",                                                    \
 	                                               "dist-check/dtb/000600_simple_image/000600_simple_image.xml",  \
-	                                               "dist-check/ebraille/000600_simple_image");
+	                                               "dist-check/ebraille/000600_simple_image",                     \
+	                                               "6");
 	exec("$</jre/bin/java", "-jar", "$</main.jar", "ebraille",                                                    \
 	                                               "odt/000600_simple_image.odt",                                 \
-	                                               "dist-check/ebraille/000600_simple_image_from_odt");
+	                                               "dist-check/ebraille/000600_simple_image_8",                   \
+	                                               "8");
