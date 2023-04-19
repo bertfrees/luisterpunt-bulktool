@@ -23,22 +23,25 @@ head {
 	display: none
 }
 
-$dots: 6 !default;
+@media embossed {
 
-@text-transform {
-	system: braille;
-	language: nl;
-	type: if($dots == 6, literary, computer);
-}
+	$dots: 6 !default;
 
-em, i {
-	text-transform: -louis-italic;
-}
+	@text-transform {
+		system: braille;
+		language: nl;
+		type: if($dots == 6, literary, computer);
+	}
 
-strong, b {
-	text-transform: -louis-bold;
-}
+	em, i {
+		text-transform: -louis-italic;
+	}
 
-u {
-	text-transform: -louis-underline;
+	strong, b {
+		text-transform: -louis-bold;
+	}
+
+	u {
+		text-transform: -louis-underline;
+	}
 }
