@@ -66,7 +66,7 @@ public class main {
 		if ("dtbook".equals(command)) {
 			if (args.length != 3)
 				throw new IllegalArgumentException("expected 3 arguments");
-		} else if ("ebraille".equals(command)) {
+		} else if ("ebraille".equals(command) || "brl".equals(command)) {
 			if (args.length < 3)
 				throw new IllegalArgumentException("expected at least 3 arguments");
 			options = new HashMap<>();
@@ -102,7 +102,7 @@ public class main {
 					                             .withInput("source", source);
 				} else {
 					URL stylesheet = main.class.getResource("/braille.scss");
-					boundScript = new BoundScript.Builder(scriptRegistry.getScript("text-to-ebraille").load())
+					boundScript = new BoundScript.Builder(scriptRegistry.getScript("text-to-" + command).load())
 					                             .withInput("source", source)
 					                             .withInput("stylesheet", stylesheet);
 					Query.MutableQuery stylesheetParameters; {
@@ -111,12 +111,20 @@ public class main {
 						Source xml = source.getName().endsWith(".xml")
 							? i.getInput("source").iterator().next()
 							: null;
-						for (SassVariable v : new SassAnalyzer(Medium.parse("embossed"), null, null)
+						String medium = "embossed";
+						for (SassVariable v : new SassAnalyzer(Medium.parse(medium), null, null)
 						                                      .analyze(i.getInput("stylesheet"), xml)
 						                                      .getVariables()) {
 							String key = v.getName();
-							if (options.containsKey(key))
-								stylesheetParameters.add(key, options.remove(key));
+							if (v.isDefault()) {
+								if (options.containsKey(key))
+									stylesheetParameters.add(key, options.remove(key));
+							} else {
+								// custom style sheet may set variables that are declared in the
+								// default style sheet: make sure that the variables in the default
+								// style sheet are overridden
+								stylesheetParameters.add(key, v.getValue());
+							}
 						}
 						if (!options.isEmpty())
 							throw new IllegalArgumentException("invalid option given: " + options.keySet().iterator().next());

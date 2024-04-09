@@ -17,6 +17,7 @@ clean :
 	rm("scripts.class");                                \
 	rm("scripts$$odtToDTBook.class");                   \
 	rm("scripts$$textToEbraille.class");                \
+	rm("scripts$$textToBRL.class");                     \
 	rm("main.jar");                                     \
 	rm("jre-win64");                                    \
 	rm("jre-mac");                                      \
@@ -110,11 +111,11 @@ dist/win64 dist/mac : dist/% : jre-% main.jar $(DIST_CLASSPATH)
 
 main.jar : classpath.txt \
            main.class \
-           scripts$$odtToDTBook.class scripts$$textToEbraille.class \
+           scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRL.class \
            odt2daisy.class odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class \
            META-INF/services/org.daisy.common.xproc.calabash.XProcStepProvider \
            META-INF/services/org.daisy.pipeline.script.XProcScriptService \
-           odt-to-dtbook.xpl text-to-ebraille.xpl odt2daisy.xpl\
+           odt-to-dtbook.xpl text-to-ebraille.xpl text-to-brl.xpl odt2daisy.xpl\
            braille.scss
 	exec("jar cvfem $@ main $^".split("\\s+"));
 
@@ -130,7 +131,7 @@ classpath.txt : $(DIST_CLASSPATH)
 		 .append(" \n");                             \
 	write(f, s.toString());
 
-scripts$$odtToDTBook.class scripts$$textToEbraille.class : scripts.class
+scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRL.class : scripts.class
 	new File("$@").setLastModified(System.currentTimeMillis());
 odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class : odt2daisy.class
 	new File("$@").setLastModified(System.currentTimeMillis());
@@ -171,6 +172,7 @@ OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8.zip :
 ODT := $(shell glob("odt/*.odt").forEach(System.out::println);)
 DTB := $(patsubst odt/%.odt,dtb/%,$(ODT))
 EBRAILLE := $(patsubst dtb/%,ebraille/%,$(DTB))
+BRL := $(patsubst dtb/%,brl/%,$(DTB))
 
 .PHONY : check
 check : dtb/000100_headings
@@ -220,6 +222,30 @@ $(EBRAILLE) : ebraille/% : dtb/%
 	}                                                                                              \
 	job.close();
 
+check : brl/000100_headings
+$(BRL) : scripts$$textToBRL.class odt2daisy$$Step$$Provider.class
+$(BRL) : brl/% : dtb/%
+	@System.setProperty("org.daisy.pipeline.logdir", "log");                                       \
+	ScriptRegistry scriptRegistry = ServiceLoader.load(ScriptRegistry.class).iterator().next();    \
+	JobFactory jobFactory = ServiceLoader.load(JobFactory.class).iterator().next();                \
+	Job job = jobFactory.newJob(                                                                   \
+		new BoundScript.Builder(scriptRegistry.getScript("text-to-brl").load())                    \
+		               .withInput("source", new File("$<", "$(notdir $<).xml").getAbsoluteFile())  \
+		               .withInput("stylesheet", new File("braille.scss").getAbsoluteFile())        \
+		               .withOption("stylesheet-parameters", "(dots:8)")                            \
+		               .build()).build().get();                                                    \
+	job.run();                                                                                     \
+	if (job.getStatus() != Job.Status.SUCCESS) {                                                   \
+		throw new RuntimeException("Job finished with status " + job.getStatus() + "\n"            \
+			+ "Job files have not been deleted: " + new File(job.getLogFile()).getParentFile()); } \
+	rm("$@");                                                                                      \
+	for (JobResult r : job.getResults().getResults("result")) {                                    \
+		File f = new File(new File("$@"), r.strip().getIdx());                                     \
+		mkdirs(f.getParentFile());                                                                 \
+		cp(r.asStream(), new FileOutputStream(f));                                                 \
+	}                                                                                              \
+	job.close();
+
 check : xprocspec
 .PHONY : xprocspec
 xprocspec : odt2daisy$$Step$$Provider.class
@@ -252,3 +278,7 @@ dist-check : dist/mac
 	                        "ebraille", "odt/000600_simple_image.odt",                                 \
 	                                    "dist-check/ebraille/000600_simple_image_8",                   \
 	                                    "--dots", "8");
+	exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	                        "-jar", "$</main.jar",                                                     \
+	                        "brl", "odt/000600_simple_image.odt",                                      \
+	                               "dist-check/brl/000600_simple_image");

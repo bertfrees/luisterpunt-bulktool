@@ -118,7 +118,7 @@
 		<!-- Transcribe text to braille -->
 		<p:for-each>
 			<p:variable name="lang" select="(/*/@xml:lang,/*/@lang,'und')[1]"/>
-			<px:apply-stylesheets type="text/css text/x-scss" media="embossed" name="html-with-css">
+			<px:apply-stylesheets type="text/css text/x-scss" media="braille" name="html-with-css">
 				<p:with-option name="stylesheets" select="$stylesheet"/>
 				<p:input port="parameters">
 					<p:pipe step="stylesheet-parameters" port="result"/>

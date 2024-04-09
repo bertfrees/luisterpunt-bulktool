@@ -1,29 +1,54 @@
-html, address,
-blockquote,
-body, dd, div,
-dl, dt, fieldset, form,
-frame, frameset,
-h1, h2, h3, h4,
-h5, h6, noframes,
-ol, p, ul, center,
-dir, hr, menu, pre,
-table,
-tr,
-thead,
-tbody,
-tfoot,
-td, th,
-caption,
-button, textarea,
-input, select {
-	display: block
-}
-
-head {
-	display: none
-}
-
 @media embossed {
+
+	// we can assume input is DTBook (coming from text-to-brl script)
+
+	$page-width: 33;
+	$page-height: 28;
+
+	// use Dedicon's style sheet as base
+	// this style sheet is specific for Dedicon's source documents and pre-processing, but it is a good start
+	$show-print-page-numbers: true;
+	$show-braille-page-numbers: true;
+	$include-document-toc-in-last-volume: true;
+	$show-inline-print-page-numbers: true;
+	$vertical-position-title-page-footer: 1;
+	$use-resumed-functionality-in-toc: true; }
+
+	@import url("https://bitbucket.org/dedicon/pip/raw/9544e2bf1c/src/main/resources/css/dedicon-default.scss") embossed;
+
+@media not embossed {
+
+	// we can assume input is HTML (coming from text-to-ebraille script)
+
+	html, address,
+	blockquote,
+	body, dd, div,
+	dl, dt, fieldset, form,
+	frame, frameset,
+	h1, h2, h3, h4,
+	h5, h6, noframes,
+	ol, p, ul, li, center,
+	dir, hr, menu, pre,
+	table,
+	tr,
+	thead,
+	tbody,
+	tfoot,
+	td, th,
+	caption,
+	button, textarea,
+	input, select {
+		display: block
+	}
+
+	head {
+		display: none
+	}
+}
+
+@media braille, embossed {
+
+	// input can be either HTML or DTBook
 
 	/**
 	 * Zes- of achtpunts-braille

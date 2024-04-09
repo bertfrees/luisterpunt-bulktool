@@ -24,4 +24,14 @@ public final class scripts {
 			         textToEbraille.class);
 		}
 	}
+
+	public static class textToBRL extends XProcScriptService {
+
+		public textToBRL() {
+			activate(ImmutableMap.of(SCRIPT_URL,     "/text-to-brl.xpl",
+			                         SCRIPT_ID,      "text-to-brl",
+			                         SCRIPT_VERSION, "1.0.0"),
+			         textToBRL.class);
+		}
+	}
 }
