@@ -26,6 +26,7 @@ clean :
 	rm("OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8"); \
 	rm("dtb");                                          \
 	rm("ebraille");                                     \
+	rm("log");                                          \
 	rm("xprocspec-reports");                            \
 	exec(new File("lib/odt2daisy"), "ant", "clean");
 
@@ -174,7 +175,8 @@ EBRAILLE := $(patsubst dtb/%,ebraille/%,$(DTB))
 .PHONY : check
 check : dtb/000100_headings
 $(DTB) : dtb/% : odt/%.odt
-	@rm("$@");                                                    \
+	@System.setProperty("org.daisy.pipeline.logdir", "log");      \
+	rm("$@");                                                     \
 	mkdirs("$@");                                                 \
 	File dtb = new File("$@/$(notdir $@).xml").getAbsoluteFile(); \
 	try {                                                         \
@@ -197,7 +199,8 @@ $(DTB) : dtb/% : odt/%.odt
 check : ebraille/000100_headings
 $(EBRAILLE) : scripts$$textToEbraille.class odt2daisy$$Step$$Provider.class
 $(EBRAILLE) : ebraille/% : dtb/%
-	@ScriptRegistry scriptRegistry = ServiceLoader.load(ScriptRegistry.class).iterator().next();   \
+	@System.setProperty("org.daisy.pipeline.logdir", "log");                                       \
+	ScriptRegistry scriptRegistry = ServiceLoader.load(ScriptRegistry.class).iterator().next();    \
 	JobFactory jobFactory = ServiceLoader.load(JobFactory.class).iterator().next();                \
 	Job job = jobFactory.newJob(                                                                   \
 		new BoundScript.Builder(scriptRegistry.getScript("text-to-ebraille").load())               \
@@ -220,7 +223,8 @@ $(EBRAILLE) : ebraille/% : dtb/%
 check : xprocspec
 .PHONY : xprocspec
 xprocspec : odt2daisy$$Step$$Provider.class
-	@File tempDir = Files.createTempDirectory("xprocspec-").toFile();      \
+	@System.setProperty("org.daisy.pipeline.logdir", "log");               \
+	File tempDir = Files.createTempDirectory("xprocspec-").toFile();       \
 	rm("xprocspec-reports");                                               \
 	if (ServiceLoader.load(XProcSpecRunner.class).iterator().next()        \
 	                 .run(new File("."),                                   \
@@ -233,15 +237,18 @@ xprocspec : odt2daisy$$Step$$Provider.class
 
 .PHONY : dist-check
 dist-check : dist/mac
-	rm("dist-check");                                                                                             \
-	exec("$</jre/bin/java", "-jar", "$</main.jar", "dtbook",                                                      \
-	                                               "odt/000600_simple_image.odt",                                 \
-	                                               "dist-check/dtb/000600_simple_image");
-	exec("$</jre/bin/java", "-jar", "$</main.jar", "ebraille",                                                    \
-	                                               "dist-check/dtb/000600_simple_image/000600_simple_image.xml",  \
-	                                               "dist-check/ebraille/000600_simple_image",                     \
-	                                               "--dots", "6");
-	exec("$</jre/bin/java", "-jar", "$</main.jar", "ebraille",                                                    \
-	                                               "odt/000600_simple_image.odt",                                 \
-	                                               "dist-check/ebraille/000600_simple_image_8",                   \
-	                                               "--dots", "8");
+	rm("dist-check");                                                                                  \
+	exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	                        "-jar", "$</main.jar",                                                     \
+	                        "dtbook", "odt/000600_simple_image.odt",                                   \
+	                                  "dist-check/dtb/000600_simple_image");
+	exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	                        "-jar", "$</main.jar",                                                     \
+	                        "ebraille", "dist-check/dtb/000600_simple_image/000600_simple_image.xml",  \
+	                                    "dist-check/ebraille/000600_simple_image",                     \
+	                                    "--dots", "6");
+	exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	                        "-jar", "$</main.jar",                                                     \
+	                        "ebraille", "odt/000600_simple_image.odt",                                 \
+	                                    "dist-check/ebraille/000600_simple_image_8",                   \
+	                                    "--dots", "8");

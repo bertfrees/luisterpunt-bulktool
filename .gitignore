@@ -8,5 +8,6 @@
 /scripts$*.class
 /dist/
 /dist-check/
+/log/
 /OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8/
 /OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8/
