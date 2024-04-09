@@ -8,7 +8,7 @@
 
 	<p:option name="source" required="true" px:type="anyFileURI" px:media-type="application/vnd.oasis.opendocument.text application/x-dtbook+xml"/>
 	<p:option name="stylesheet" required="false" select="''" px:sequence="true" px:separator=" " px:type="anyFileURI" px:media-type="text/css text/x-scss"/>
-	<p:option name="dots" required="false" select="'6'" px:type="xs:integer"/>
+	<p:option name="stylesheet-parameters" required="false" select="''" px:type="transform-query"/>
 	<p:option name="temp-dir" required="true" px:output="temp" px:type="anyDirURI"/>
 	<p:option name="result" required="true" px:output="result" px:type="anyDirURI" px:media-type="application/xhtml+xml"/>
 
@@ -38,11 +38,17 @@
 		<p:documentation>
 			px:transform
 			px:apply-stylesheets
+			px:parse-query
 		</p:documentation>
 	</p:import>
-	<p:import href="http://www.daisy.org/pipeline/modules/braille/css-utils/library.xpl">
+	<p:import href="http://www.daisy.org/pipeline/modules/css-utils/library.xpl">
 		<p:documentation>
-			css:delete-stylesheets
+			px:css-detach
+		</p:documentation>
+	</p:import>
+	<p:import href="http://www.daisy.org/pipeline/modules/fileset-utils/library.xpl">
+		<p:documentation>
+			px:fileset-add-entry
 		</p:documentation>
 	</p:import>
 	<p:import href="http://www.daisy.org/pipeline/modules/dtbook-utils/library.xpl">
@@ -50,6 +56,11 @@
 			px:dtbook-load
 		</p:documentation>
 	</p:import>
+
+	<px:parse-query name="stylesheet-parameters">
+		<p:with-option name="query" select="$stylesheet-parameters"/>
+	</px:parse-query>
+	<p:sink/>
 
 	<!-- Load DTBook or convert ODT to DTBook -->
 	<p:choose name="dtbook" px:progress="1/3">
@@ -66,11 +77,11 @@
 		<p:otherwise>
 			<p:output port="fileset" primary="true"/>
 			<p:output port="in-memory" sequence="true">
-				<p:pipe step="load" port="in-memory.out"/>
+				<p:pipe step="load" port="result.in-memory"/>
 			</p:output>
-			<p:load>
+			<px:fileset-add-entry media-type="application/x-dtbook+xml">
 				<p:with-option name="href" select="$source"/>
-			</p:load>
+			</px:fileset-add-entry>
 			<px:dtbook-load name="load"/>
 		</p:otherwise>
 	</p:choose>
@@ -107,15 +118,20 @@
 		<!-- Transcribe text to braille -->
 		<p:for-each>
 			<p:variable name="lang" select="(/*/@xml:lang,/*/@lang,'und')[1]"/>
-			<px:apply-stylesheets type="text/css text/x-scss" media="embossed">
+			<px:apply-stylesheets type="text/css text/x-scss" media="embossed" name="html-with-css">
 				<p:with-option name="stylesheets" select="$stylesheet"/>
-				<p:with-param port="parameters" name="dots" select="$dots"/>
+				<p:input port="parameters">
+					<p:pipe step="stylesheet-parameters" port="result"/>
+				</p:input>
 			</px:apply-stylesheets>
 			<px:transform name="transform">
 				<p:with-option name="query" select="concat('(input:html)(input:css)(output:html)(output:braille)',
 				                                    '(document-locale:',$lang,')')"/>
+				<p:input port="parameters">
+					<p:pipe step="html-with-css" port="result.parameters"/>
+				</p:input>
 			</px:transform>
-			<css:delete-stylesheets name="extract"/>
+			<px:css-detach name="extract"/>
 			<p:delete match="@style"/>
 		</p:for-each>
 		<p:identity name="html-with-braille"/>

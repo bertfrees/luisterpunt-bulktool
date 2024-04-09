@@ -9,7 +9,7 @@
     <dependency>
       <groupId>org.daisy.pipeline</groupId>
       <artifactId>assembly</artifactId>
-      <version>1.14.13</version>
+      <version>1.14.18</version>
     </dependency>
     <!--
         test dependencies
@@ -17,7 +17,7 @@
     <dependency>
       <groupId>org.daisy.maven</groupId>
       <artifactId>xprocspec-runner</artifactId>
-      <version>1.2.6</version>
+      <version>1.2.7</version>
       <exclusions>
         <exclusion>
           <groupId>*</groupId>
@@ -39,12 +39,12 @@
     <dependency>
       <groupId>org.daisy.maven</groupId>
       <artifactId>xproc-engine-daisy-pipeline</artifactId>
-      <version>1.14.4</version>
+      <version>1.14.6</version>
     </dependency>
     <dependency>
       <groupId>org.daisy.xprocspec</groupId>
       <artifactId>xprocspec</artifactId>
-      <version>1.4.2</version>
+      <version>1.4.3</version>
       <exclusions>
         <exclusion>
           <groupId>*</groupId>

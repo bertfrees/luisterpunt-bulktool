@@ -3,9 +3,19 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ServiceLoader;
 
+import javax.xml.transform.Source;
+
+import org.daisy.pipeline.braille.common.Query;
+import org.daisy.pipeline.css.Medium;
+import org.daisy.pipeline.css.sass.SassAnalyzer;
+import org.daisy.pipeline.css.sass.SassAnalyzer.SassVariable;
 import org.daisy.pipeline.script.BoundScript;
+import org.daisy.pipeline.script.ScriptInput;
 import org.daisy.pipeline.script.ScriptRegistry;
 import org.daisy.pipeline.job.Job;
 import org.daisy.pipeline.job.JobFactory;
@@ -52,12 +62,25 @@ public class main {
 		if (args.length < 1)
 			throw new IllegalArgumentException("expected at least one argument");
 		String command = args[0];
+		Map<String,String> options = null;
 		if ("dtbook".equals(command)) {
 			if (args.length != 3)
 				throw new IllegalArgumentException("expected 3 arguments");
 		} else if ("ebraille".equals(command)) {
-			if (args.length != 4)
-				throw new IllegalArgumentException("expected 4 arguments");
+			if (args.length < 3)
+				throw new IllegalArgumentException("expected at least 3 arguments");
+			options = new HashMap<>();
+			for (int k = 3; k < args.length; k += 2) {
+				String key = args[k];
+				if (!key.startsWith("--"))
+					throw new IllegalArgumentException("unexpected argument: " + key);
+				key = key.substring(2);
+				if (options.containsKey(key))
+					throw new IllegalArgumentException("duplicate option: " + key);
+				if (k + 1 == args.length)
+					throw new IllegalArgumentException("expected an argument after " + key);
+				options.put(key, args[k + 1]);
+			}
 		} else {
 			throw new IllegalArgumentException("command '" + command + "' not recognized");
 		}
@@ -73,13 +96,35 @@ public class main {
 		boolean success = false;
 		try {
 			ScriptRegistry scriptRegistry = ServiceLoader.load(ScriptRegistry.class).iterator().next();
-			BoundScript.Builder boundScript = "dtbook".equals(command)
-				? new BoundScript.Builder(scriptRegistry.getScript("odt-to-dtbook").load())
-				                 .withInput("source", source)
-				: new BoundScript.Builder(scriptRegistry.getScript("text-to-ebraille").load())
-				                .withInput("source", source)
-				                .withInput("stylesheet", main.class.getResource("/braille.scss"))
-				                .withOption("dots", args[3]);
+			BoundScript.Builder boundScript; {
+				if ("dtbook".equals(command)) {
+					boundScript = new BoundScript.Builder(scriptRegistry.getScript("odt-to-dtbook").load())
+					                             .withInput("source", source);
+				} else {
+					URL stylesheet = main.class.getResource("/braille.scss");
+					boundScript = new BoundScript.Builder(scriptRegistry.getScript("text-to-ebraille").load())
+					                             .withInput("source", source)
+					                             .withInput("stylesheet", stylesheet);
+					Query.MutableQuery stylesheetParameters; {
+						stylesheetParameters = Query.util.mutableQuery();
+						ScriptInput i = boundScript.build().getInput();
+						Source xml = source.getName().endsWith(".xml")
+							? i.getInput("source").iterator().next()
+							: null;
+						for (SassVariable v : new SassAnalyzer(Medium.parse("embossed"), null, null)
+						                                      .analyze(i.getInput("stylesheet"), xml)
+						                                      .getVariables()) {
+							String key = v.getName();
+							if (options.containsKey(key))
+								stylesheetParameters.add(key, options.remove(key));
+						}
+						if (!options.isEmpty())
+							throw new IllegalArgumentException("invalid option given: " + options.keySet().iterator().next());
+					}
+					if (!stylesheetParameters.isEmpty())
+						boundScript.withOption("stylesheet-parameters", stylesheetParameters.toString());
+				}
+			}
 			JobFactory jobFactory = ServiceLoader.load(JobFactory.class).iterator().next();
 			try (Job job = jobFactory.newJob(boundScript.build()).build().get()) {
 				job.run();

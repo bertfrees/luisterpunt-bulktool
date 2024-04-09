@@ -8,7 +8,9 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.google.common.collect.ImmutableMap;
+
 import com.versusoft.packages.ooo.odt2daisy.Odt2Daisy;
+
 import com.xmlcalabash.core.XProcRuntime;
 import com.xmlcalabash.io.WritablePipe;
 import com.xmlcalabash.library.DefaultStep;
@@ -29,6 +31,7 @@ import org.daisy.common.transform.XMLTransformer;
 import org.daisy.common.xproc.calabash.XMLCalabashOutputValue;
 import org.daisy.common.xproc.calabash.XProcStep;
 import org.daisy.common.xproc.calabash.XProcStepProvider;
+import org.daisy.common.xproc.XProcMonitor;
 
 import org.xml.sax.SAXException;
 
@@ -130,7 +133,7 @@ public class odt2daisy implements XMLTransformer {
 			}
 
 			@Override
-			public XProcStep newStep(XProcRuntime runtime, XAtomicStep step) {
+			public XProcStep newStep(XProcRuntime runtime, XAtomicStep step, XProcMonitor monitor, Map<String,String> properties) {
 				return new Step(runtime, step);
 			}
 
