@@ -79,4 +79,15 @@
 	u {
 		text-transform: -louis-underline;
 	}
+
+	/**
+	 * Hoofdlettertekens weergeven
+	 */
+	$capital-letters: true !default;
+
+	@if $capital-letters != true {
+		:root {
+			text-transform: lowercase;
+		}
+	}
 }
