@@ -5,6 +5,13 @@
 	$page-width: 33;
 	$page-height: 28;
 
+	/**
+	 * @var boolean $duplex
+	 *
+ 	 * Dubbelzijdig
+	 */
+	$duplex: false !default;
+
 	// use Dedicon's style sheet as base
 	// this style sheet is specific for Dedicon's source documents and pre-processing, but it is a good start
 	$show-print-page-numbers: true;
