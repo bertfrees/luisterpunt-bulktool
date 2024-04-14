@@ -1,3 +1,4 @@
 scripts$odtToDTBook
 scripts$textToEbraille
 scripts$textToBRL
+scripts$odtToBraille

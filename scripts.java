@@ -34,4 +34,14 @@ public final class scripts {
 			         textToBRL.class);
 		}
 	}
+
+	public static class odtToBraille extends XProcScriptService {
+
+		public odtToBraille() {
+			activate(ImmutableMap.of(SCRIPT_URL,     "/odt2braille.xpl",
+			                         SCRIPT_ID,      "odt2braille",
+			                         SCRIPT_VERSION, "1.0.0"),
+			         textToBRL.class);
+		}
+	}
 }

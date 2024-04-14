@@ -5,11 +5,33 @@
   <artifactId>x</artifactId>
   <version>0</version>
   <packaging>pom</packaging>
+  <properties>
+    <odt2braille.version>0.1.1-p1-SNAPSHOT</odt2braille.version>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.daisy.pipeline</groupId>
       <artifactId>assembly</artifactId>
       <version>1.14.18</version>
+    </dependency>
+    <dependency>
+      <groupId>be.docarch</groupId>
+      <artifactId>odt2braille-core</artifactId>
+      <version>${odt2braille.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>be.docarch</groupId>
+      <artifactId>odt2braille-liblouis</artifactId>
+      <version>${odt2braille.version}</version>
+      <classifier>macosx_x86_64</classifier>
+      <type>zip</type>
+    </dependency>
+    <dependency>
+      <groupId>be.docarch</groupId>
+      <artifactId>odt2braille-liblouis</artifactId>
+      <version>${odt2braille.version}</version>
+      <classifier>windows_x86</classifier>
+      <type>zip</type>
     </dependency>
     <!--
         test dependencies

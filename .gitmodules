@@ -7,3 +7,6 @@
 [submodule "lib/JODL"]
 	path = lib/JODL
 	url = https://github.com/odt2daisy/JODL
+[submodule "lib/odt2braille"]
+	path = lib/odt2braille
+	url = https://github.com/bertfrees/odt2braille

@@ -6,15 +6,19 @@ all : check dist
 .PHONY : clean
 clean :
 	@glob("lib/*.jar").forEach(x -> rm(x));             \
+	glob("lib/*.zip").forEach(x -> rm(x));              \
 	rm("java-shell-for-make/recipes");                  \
 	rm("dist");                                         \
 	rm("dist-check");                                   \
 	rm("main.class");                                   \
+	rm("odt2braille.class");                            \
+	rm("odt2braille$$Provider.class");                  \
 	rm("odt2daisy.class");                              \
 	rm("odt2daisy$$1.class");                           \
 	rm("odt2daisy$$Step.class");                        \
 	rm("odt2daisy$$Step$$Provider.class");              \
 	rm("scripts.class");                                \
+	rm("scripts$$odtToBraille.class");                  \
 	rm("scripts$$odtToDTBook.class");                   \
 	rm("scripts$$textToEbraille.class");                \
 	rm("scripts$$textToBRL.class");                     \
@@ -30,8 +34,22 @@ clean :
 	rm("log");                                          \
 	rm("xprocspec-reports");                            \
 	exec(new File("lib/odt2daisy"), "ant", "clean");
+	glob("lib/odt2braille/**/target/**").forEach(x -> rm(x));
 
 ifneq ($(MAKECMDGOALS),clean)
+
+MVN_LOCAL_REPOSITORY := $(shell                                                           \
+	Pattern p = Pattern.compile("<localRepository>(.+?)</localRepository>");              \
+	captureOutput(                                                                        \
+		line -> {                                                                         \
+			Matcher m = p.matcher(line);                                                  \
+			if (m.find()) println(m.group(1)); },                                         \
+		"mvn", "org.apache.maven.plugins:maven-help-plugin:3.4.0:effective-settings");    )
+ifeq ($(MVN_LOCAL_REPOSITORY),)
+$(error "Local Maven repository could not be determined")
+endif
+
+ODT2BRAILLE_VERSION := $(shell println(xpath(new File("lib/odt2braille/pom.xml"), "/*/*[local-name()='version']/text()"));)
 
 LIBS := $(shell                                                                             \
 	/* compile odt2daisy */                                                                 \
@@ -46,6 +64,25 @@ LIBS := $(shell                                                                 
 			err.println(output);                                                            \
 			err.println("Failed to compile odt2daisy");                                     \
 			exit(rv); }}                                                                    \
+	/* compile odt2braille */ {                                                             \
+		File d = new File("$(MVN_LOCAL_REPOSITORY)/be/docarch");                            \
+		String v = "$(ODT2BRAILLE_VERSION)";                                                \
+		if (!new File(d, "/odt2braille-core/"     + v +                                     \
+		                 "/odt2braille-core-"     + v + ".jar").exists() ||                 \
+		    !new File(d, "/odt2braille-liblouis/" + v +                                     \
+		                 "/odt2braille-liblouis-" + v + "-macosx_x86_64.zip").exists() ||   \
+		    !new File(d, "/odt2braille-liblouis/" + v +                                     \
+		                 "/odt2braille-liblouis-" + v + "-windows_x86.zip").exists()) {     \
+			StringWriter output = new StringWriter();                                       \
+			int rv =                                                                        \
+				captureOutput(                                                              \
+					err::println,                                                           \
+					new File("lib/odt2braille"),                                            \
+					"$(MAKE)", "MVN=mvn -B", "install", "install-windows");                 \
+			if (rv != 0) {                                                                  \
+				err.println(output);                                                        \
+				err.println("Failed to compile odt2braille");                               \
+				exit(rv); }}}                                                               \
 	/* download Maven dependencies */                                                       \
 	if (glob("lib/*.jar").isEmpty()) {                                                      \
 		StringWriter output = new StringWriter();                                           \
@@ -99,23 +136,30 @@ dist/win64.zip dist/mac.zip : %.zip : %
 	exec(new File("$<"), cmd);
 
 dist/win64 dist/mac : dist/% : jre-% main.jar $(DIST_CLASSPATH)
-	rm("$@");                            \
-	mkdirs("$@");                        \
-	mv("$<", "$@/jre");                  \
-	cp("$(word 2,$^)", "$@/");           \
-	mkdirs("$@/lib");                    \
-	int i = 0;                           \
-	for (String f : "$^".split("\\s+"))  \
-		if (i++ >= 2)                    \
+	rm("$@");                                                         \
+	mkdirs("$@");                                                     \
+	mv("$<", "$@/jre");                                               \
+	cp("$(word 2,$^)", "$@/");                                        \
+	mkdirs("$@/lib/odt2braille-resources");                           \
+	unzip(new File("lib/odt2braille-liblouis-$(ODT2BRAILLE_VERSION)-" \
+	               + ("$@".endsWith("mac")                            \
+	                     ? "macosx_x86_64"                            \
+	                     : "windows_x86")                             \
+	               + ".zip"),                                         \
+	               new File("$@/lib/odt2braille-resources"));         \
+	int i = 0;                                                        \
+	for (String f : "$^".split("\\s+"))                               \
+		if (i++ >= 2)                                                 \
 			cp(f, "$@/lib/");
 
 main.jar : classpath.txt \
            main.class \
-           scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRL.class \
+           scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRL.class scripts$$odtToBraille.class \
            odt2daisy.class odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class \
+           odt2braille.class odt2braille$$Provider.class \
            META-INF/services/org.daisy.common.xproc.calabash.XProcStepProvider \
            META-INF/services/org.daisy.pipeline.script.XProcScriptService \
-           odt-to-dtbook.xpl text-to-ebraille.xpl text-to-brl.xpl odt2daisy.xpl\
+           odt-to-dtbook.xpl text-to-ebraille.xpl text-to-brl.xpl odt2daisy.xpl odt2braille.xpl \
            braille.scss
 	exec("jar cvfem $@ main $^".split("\\s+"));
 
@@ -131,12 +175,14 @@ classpath.txt : $(DIST_CLASSPATH)
 		 .append(" \n");                             \
 	write(f, s.toString());
 
-scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRL.class : scripts.class
+scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRL.class scripts$$odtToBraille.class : scripts.class
 	new File("$@").setLastModified(System.currentTimeMillis());
 odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class : odt2daisy.class
 	new File("$@").setLastModified(System.currentTimeMillis());
+braille$$Provider.class : odt2braille.class
+	new File("$@").setLastModified(System.currentTimeMillis());
 
-main.class odt2daisy.class scripts.class : %.class : %.java $(DIST_CLASSPATH)
+main.class odt2daisy.class odt2braille.class scripts.class : %.class : %.java $(DIST_CLASSPATH)
 	javac("-cp", String.join(File.pathSeparator, "$(DIST_CLASSPATH)".split("\\s+")), "$<");
 
 .INTERMEDIATE : jre-mac jre-win64

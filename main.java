@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Collections;
@@ -24,6 +25,20 @@ import org.daisy.pipeline.job.JobResult;
 public class main {
 
 	public static void main(String args[]) {
+		try {
+			_main(args);
+		} catch (Throwable e) {
+			e.printStackTrace();
+			/*System.out.println("Press any key to continue...");
+			try {
+				System.in.read();
+			} catch(IOException ioe) {
+			}*/
+			System.exit(1);
+		}
+	}
+
+	private static void _main(String args[]) {
 		if (getJavaVersion() < 8) {
 			// call self with correct java
 			try {
@@ -63,6 +78,9 @@ public class main {
 			throw new IllegalArgumentException("expected at least one argument");
 		String command = args[0];
 		Map<String,String> options = null;
+
+		// FIXME: add a command to create multiple formats at once?
+
 		if ("dtbook".equals(command)) {
 			if (args.length != 3)
 				throw new IllegalArgumentException("expected 3 arguments");
@@ -87,6 +105,9 @@ public class main {
 		File source = new File(args[1]).getAbsoluteFile();
 		File outputDir = new File(args[2]).getAbsoluteFile();
 		if (!source.exists())
+
+			// FIXME: add code to regenerate files when sources are newer
+
 			throw new IllegalArgumentException("file does not exist: " + source);
 		if (outputDir.exists())
 			if (!outputDir.isDirectory())
@@ -100,6 +121,15 @@ public class main {
 				if ("dtbook".equals(command)) {
 					boundScript = new BoundScript.Builder(scriptRegistry.getScript("odt-to-dtbook").load())
 					                             .withInput("source", source);
+				} else if ("brl".equals(command) && System.getenv("ODT2BRAILLE") != null) {
+
+					// FIXME: somehow transform options into configuration file?
+					// => do this in XProc
+
+					if (!options.isEmpty())
+						throw new IllegalArgumentException("invalid option given: " + options.keySet().iterator().next());
+					boundScript = new BoundScript.Builder(scriptRegistry.getScript("odt2braille").load())
+					                             .withInput("source", source);
 				} else {
 					URL stylesheet = main.class.getResource("/braille.scss");
 					boundScript = new BoundScript.Builder(scriptRegistry.getScript("text-to-" + command).load())
@@ -112,6 +142,14 @@ public class main {
 							? i.getInput("source").iterator().next()
 							: null;
 						String medium = "embossed";
+
+						// not adding page width and height to medium because they are defined in the CSS
+						//if ("brl".equals(command)) {
+						//	int pageWidth = 33;
+						//	int pageHeight = 28;
+						//	medium = medium + " AND (width: " + pageWidth + ") AND (height: " + pageHeight + ")";
+						//}
+
 						for (SassVariable v : new SassAnalyzer(Medium.parse(medium), null, null)
 						                                      .analyze(i.getInput("stylesheet"), xml)
 						                                      .getVariables()) {
@@ -135,6 +173,9 @@ public class main {
 			}
 			JobFactory jobFactory = ServiceLoader.load(JobFactory.class).iterator().next();
 			try (Job job = jobFactory.newJob(boundScript.build()).build().get()) {
+
+				// FIXME: execute jobs in parallel?
+
 				job.run();
 				if (success = (job.getStatus() == Job.Status.SUCCESS)) {
 					for (JobResult r : job.getResults().getResults("result")) {

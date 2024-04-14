@@ -1,7 +1,10 @@
 .DS_Store
 /lib/*.jar
+/lib/*.zip
 /main.jar
 /main.class
+/odt2braille.class
+/odt2braille$*.class
 /odt2daisy.class
 /odt2daisy$*.class
 /scripts.class
