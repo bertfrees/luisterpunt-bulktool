@@ -4,7 +4,12 @@ include java-shell-for-make/enable-java-shell.mk
 all : check dist
 
 .PHONY : clean
-clean :
+clean : mostlyclean
+	rm("OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8");     \
+	rm("OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8");
+
+.PHONY : mostlyclean
+mostlyclean :
 	@glob("lib/*.jar").forEach(x -> rm(x));             \
 	glob("lib/*.zip").forEach(x -> rm(x));              \
 	rm("java-shell-for-make/recipes");                  \
@@ -27,8 +32,6 @@ clean :
 	rm("jre-mac");                                      \
 	rm("classpath.txt");                                \
 	rm("target");                                       \
-	rm("OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8");     \
-	rm("OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8"); \
 	rm("dtb");                                          \
 	rm("ebraille");                                     \
 	rm("log");                                          \
@@ -37,6 +40,7 @@ clean :
 	glob("lib/odt2braille/**/target/**").forEach(x -> rm(x));
 
 ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),mostlyclean)
 
 MVN_LOCAL_REPOSITORY := $(shell                                                           \
 	Pattern p = Pattern.compile("<localRepository>(.+?)</localRepository>");              \
@@ -121,6 +125,7 @@ export IMPORTS = \
 	org.daisy.pipeline.script.*                     \
 	org.daisy.pipeline.job.*
 
+endif
 endif
 
 .PHONY : dist dist-win dist-win64 dist-mac
