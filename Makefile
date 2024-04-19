@@ -165,7 +165,7 @@ main.jar : classpath.txt \
            META-INF/services/org.daisy.common.xproc.calabash.XProcStepProvider \
            META-INF/services/org.daisy.pipeline.script.XProcScriptService \
            odt-to-dtbook.xpl text-to-ebraille.xpl text-to-brl.xpl odt2daisy.xpl odt2braille.xpl \
-           braille.scss
+           braille.scss dedicon-default.scss
 	exec("jar cvfem $@ main $^".split("\\s+"));
 
 .INTERMEDIATE : classpath.txt
@@ -189,6 +189,10 @@ braille$$Provider.class : odt2braille.class
 
 main.class odt2daisy.class odt2braille.class scripts.class : %.class : %.java $(DIST_CLASSPATH)
 	javac("-cp", String.join(File.pathSeparator, "$(DIST_CLASSPATH)".split("\\s+")), "$<");
+
+braille.scss : dedicon-default.scss
+dedicon-default.scss :
+	cp(new URL("https://bitbucket.org/dedicon/pip/raw/9544e2bf1c/src/main/resources/css/$@"), new File("$@"));
 
 .INTERMEDIATE : jre-mac jre-win64
 jre-win64 : OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8/jdk-11.0.13+8

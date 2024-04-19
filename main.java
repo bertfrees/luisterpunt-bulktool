@@ -3,7 +3,9 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -131,10 +133,24 @@ public class main {
 					boundScript = new BoundScript.Builder(scriptRegistry.getScript("odt2braille").load())
 					                             .withInput("source", source);
 				} else {
-					URL stylesheet = main.class.getResource("/braille.scss");
 					boundScript = new BoundScript.Builder(scriptRegistry.getScript("text-to-" + command).load())
-					                             .withInput("source", source)
-					                             .withInput("stylesheet", stylesheet);
+					                             .withInput("source", source);
+					URL stylesheet = main.class.getResource("/braille.scss");
+					// FIXME: ScriptInput.Builder currently does not support jar: URIs, so we must use temporary
+					// files as a workaround.
+					// Note that we can not use a stream (URL) because of the dedicon-default.scss dependency.
+					if ("brl".equals(command) && !"file".equals(stylesheet.getProtocol())) {
+						File tmpDir = Files.createTempDirectory(null).toFile();
+						File f = new File(tmpDir, "braille.scss");
+						Files.copy(stylesheet.openStream(), f.toPath());
+						f.deleteOnExit();
+						boundScript = boundScript.withInput("stylesheet", f);
+						f = new File(tmpDir, "dedicon-default.scss");
+						Files.copy(main.class.getResource("/dedicon-default.scss").openStream(), f.toPath());
+						f.deleteOnExit();
+					} else {
+						boundScript = boundScript.withInput("stylesheet", stylesheet);
+					}
 					Query.MutableQuery stylesheetParameters; {
 						stylesheetParameters = Query.util.mutableQuery();
 						ScriptInput i = boundScript.build().getInput();

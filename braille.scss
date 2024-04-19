@@ -21,7 +21,7 @@
 	$vertical-position-title-page-footer: 1;
 	$use-resumed-functionality-in-toc: true; }
 
-	@import url("https://bitbucket.org/dedicon/pip/raw/9544e2bf1c/src/main/resources/css/dedicon-default.scss") embossed;
+	@import url("dedicon-default.scss") embossed;
 
 @media not embossed {
 

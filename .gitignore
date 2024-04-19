@@ -1,4 +1,5 @@
 .DS_Store
+/dedicon-default.scss
 /lib/*.jar
 /lib/*.zip
 /main.jar
