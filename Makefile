@@ -1,7 +1,7 @@
 include java-shell-for-make/enable-java-shell.mk
 
 .PHONY : all
-all : check dist
+all : check dist dist-check
 
 .PHONY : clean
 clean : mostlyclean
