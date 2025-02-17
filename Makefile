@@ -16,6 +16,8 @@ mostlyclean :
 	rm("dist");                                         \
 	rm("dist-check");                                   \
 	rm("main.class");                                   \
+	rm("main$$MessageQueue.class");                     \
+	rm("main$$1.class");                                \
 	rm("odt2braille.class");                            \
 	rm("odt2braille$$Provider.class");                  \
 	rm("odt2daisy.class");                              \
@@ -158,7 +160,7 @@ dist/win64 dist/mac : dist/% : jre-% main.jar $(DIST_CLASSPATH)
 			cp(f, "$@/lib/");
 
 main.jar : classpath.txt \
-           main.class \
+           main.class main$$MessageQueue.class main$$1.class \
            scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRF.class scripts$$odtToBraille.class \
            odt2daisy.class odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class \
            odt2braille.class odt2braille$$Provider.class \
@@ -180,6 +182,8 @@ classpath.txt : $(DIST_CLASSPATH)
 		 .append(" \n");                             \
 	write(f, s.toString());
 
+main$$MessageQueue.class main$$1.class : main.class
+	new File("$@").setLastModified(System.currentTimeMillis());
 scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRF.class scripts$$odtToBraille.class : scripts.class
 	new File("$@").setLastModified(System.currentTimeMillis());
 odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class : odt2daisy.class
