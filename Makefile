@@ -16,6 +16,8 @@ mostlyclean :
 	rm("dist");                                         \
 	rm("dist-check");                                   \
 	rm("main.class");                                   \
+	rm("main$$MessageQueue.class");                     \
+	rm("main$$1.class");                                \
 	rm("odt2braille.class");                            \
 	rm("odt2braille$$Provider.class");                  \
 	rm("odt2daisy.class");                              \
@@ -123,7 +125,8 @@ export IMPORTS = \
 	com.versusoft.packages.ooo.odt2daisy.*          \
 	org.daisy.maven.xproc.xprocspec.XProcSpecRunner \
 	org.daisy.pipeline.script.*                     \
-	org.daisy.pipeline.job.*
+	org.daisy.pipeline.job.*                        \
+	org.daisy.common.messaging.*
 
 endif
 endif
@@ -158,7 +161,7 @@ dist/win64 dist/mac : dist/% : jre-% main.jar $(DIST_CLASSPATH)
 			cp(f, "$@/lib/");
 
 main.jar : classpath.txt \
-           main.class \
+           main.class main$$MessageQueue.class main$$1.class \
            scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRF.class scripts$$odtToBraille.class \
            odt2daisy.class odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class \
            odt2braille.class odt2braille$$Provider.class \
@@ -180,6 +183,8 @@ classpath.txt : $(DIST_CLASSPATH)
 		 .append(" \n");                             \
 	write(f, s.toString());
 
+main$$MessageQueue.class main$$1.class : main.class
+	new File("$@").setLastModified(System.currentTimeMillis());
 scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRF.class scripts$$odtToBraille.class : scripts.class
 	new File("$@").setLastModified(System.currentTimeMillis());
 odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class : odt2daisy.class
@@ -267,6 +272,11 @@ $(EBRAILLE) : ebraille/% : dtb/%
 		               .build()).build().get();                                                    \
 	job.run();                                                                                     \
 	if (job.getStatus() != Job.Status.SUCCESS) {                                                   \
+		for (Message m :                                                                           \
+				job.getMonitor().getMessageAccessor().createFilter()                               \
+				                .filterLevels(Collections.singleton(Message.Level.INFO))           \
+				                .getMessages())                                                    \
+			err.println(m.getText());                                                              \
 		throw new RuntimeException("Job finished with status " + job.getStatus() + "\n"            \
 			+ "Job files have not been deleted: " + new File(job.getLogFile()).getParentFile()); } \
 	rm("$@");                                                                                      \

@@ -4,6 +4,7 @@
 /lib/*.zip
 /main.jar
 /main.class
+/main$*.class
 /odt2braille.class
 /odt2braille$*.class
 /odt2daisy.class
