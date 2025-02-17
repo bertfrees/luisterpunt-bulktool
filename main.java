@@ -23,13 +23,20 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.function.Consumer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
 import javax.xml.transform.Source;
 
+import org.daisy.common.messaging.Message;
+import org.daisy.common.messaging.MessageAccessor;
+import org.daisy.common.messaging.Message.Level;
+import org.daisy.common.messaging.ProgressMessage;
 import org.daisy.pipeline.braille.common.Query;
 import org.daisy.pipeline.css.Medium;
 import org.daisy.pipeline.css.sass.SassAnalyzer;
@@ -209,7 +216,22 @@ public class main {
 
 				// FIXME: execute jobs in parallel?
 
-				job.run();
+				MessageQueue messageQueue = new MessageQueue(job);
+				new Thread(job).start();
+				running: while (true) {
+					for (Message m : messageQueue.getNewMessages())
+						System.err.println(m.getText());
+					switch (job.getStatus()) {
+					case SUCCESS:
+					case FAIL:
+					case ERROR:
+						break running;
+					case IDLE:
+					case RUNNING:
+					default:
+						Thread.sleep(1000);
+					}
+				}
 				if (success = (job.getStatus() == Job.Status.SUCCESS)) {
 					for (JobResult r : job.getResults().getResults("result")) {
 						File f = new File(outputDir, r.strip().getIdx());
@@ -240,5 +262,47 @@ public class main {
 		else
 			v = v.replaceAll("\\..*", "");
 		return Integer.parseInt(v);
+	}
+
+	private static class MessageQueue {
+
+		private final MessageAccessor accessor;
+		private int previousLastMessage = -1;
+
+		private MessageQueue(Job job) {
+			accessor = job.getMonitor().getMessageAccessor();
+		}
+
+		public List<Message> getNewMessages() {
+			List<Message> queue = new ArrayList<>();
+			int lastMessage = flattenMessages(
+				accessor.createFilter()
+				        .greaterThan(previousLastMessage)
+				        .filterLevels(Collections.singleton(Level.INFO))
+				        .getMessages(),
+				previousLastMessage + 1,
+				queue::add);
+			if (lastMessage > previousLastMessage)
+				previousLastMessage = lastMessage;
+			return queue;
+		}
+
+		private int flattenMessages(Iterable<? extends Message> messages, int firstMessage, Consumer<Message> collect) {
+			int lastMessage = -1;
+			for (Message m : messages) {
+				int seq = m.getSequence();
+				if (seq >= firstMessage) {
+					collect.accept(m);
+					if (seq > lastMessage)
+						lastMessage = seq;
+				}
+				if (m instanceof ProgressMessage) {
+					seq = flattenMessages((ProgressMessage)m, firstMessage, collect);
+					if (seq > lastMessage)
+						lastMessage = seq;
+				}
+			}
+			return lastMessage;
+		}
 	}
 }
