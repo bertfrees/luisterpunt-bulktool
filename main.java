@@ -86,7 +86,7 @@ public class main {
 		if ("dtbook".equals(command)) {
 			if (args.length != 3)
 				throw new IllegalArgumentException("expected 3 arguments");
-		} else if ("ebraille".equals(command) || "brl".equals(command)) {
+		} else if ("ebraille".equals(command) || "brf".equals(command)) {
 			if (args.length < 3)
 				throw new IllegalArgumentException("expected at least 3 arguments");
 			options = new HashMap<>();
@@ -123,7 +123,7 @@ public class main {
 				if ("dtbook".equals(command)) {
 					boundScript = new BoundScript.Builder(scriptRegistry.getScript("odt-to-dtbook").load())
 					                             .withInput("source", source);
-				} else if ("brl".equals(command) && System.getenv("ODT2BRAILLE") != null) {
+				} else if ("brf".equals(command) && System.getenv("ODT2BRAILLE") != null) {
 
 					// FIXME: somehow transform options into configuration file?
 					// => do this in XProc
@@ -139,7 +139,7 @@ public class main {
 					// FIXME: ScriptInput.Builder currently does not support jar: URIs, so we must use temporary
 					// files as a workaround.
 					// Note that we can not use a stream (URL) because of the dedicon-default.scss dependency.
-					if ("brl".equals(command) && !"file".equals(stylesheet.getProtocol())) {
+					if ("brf".equals(command) && !"file".equals(stylesheet.getProtocol())) {
 						File tmpDir = Files.createTempDirectory(null).toFile();
 						File f = new File(tmpDir, "braille.scss");
 						Files.copy(stylesheet.openStream(), f.toPath());
@@ -160,7 +160,7 @@ public class main {
 						String medium = "embossed";
 
 						// not adding page width and height to medium because they are defined in the CSS
-						//if ("brl".equals(command)) {
+						//if ("brf".equals(command)) {
 						//	int pageWidth = 33;
 						//	int pageHeight = 28;
 						//	medium = medium + " AND (width: " + pageWidth + ") AND (height: " + pageHeight + ")";

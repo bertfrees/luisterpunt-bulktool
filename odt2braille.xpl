@@ -29,7 +29,7 @@
 		</p:input>
 	</pxi:odt2braille>
 
-	<!-- PEF to BRL -->
+	<!-- PEF to BRF -->
 	<p:group>
 		<p:variable name="name" select="replace($source,'^.*/([^/]*)\.[^/\.]*$','$1')"/>
 		<px:pef-store>
@@ -40,7 +40,7 @@
 			                                           (line-breaks:dos)
 			                                           (pad:both)
 			                                           (charset:&quot;IBM00858&quot;)
-			                                           (file-extension:&quot;.brl&quot;)'"/>
+			                                           (file-extension:&quot;.brf&quot;)'"/>
 		</px:pef-store>
 	</p:group>
 

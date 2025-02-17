@@ -26,7 +26,7 @@ mostlyclean :
 	rm("scripts$$odtToBraille.class");                  \
 	rm("scripts$$odtToDTBook.class");                   \
 	rm("scripts$$textToEbraille.class");                \
-	rm("scripts$$textToBRL.class");                     \
+	rm("scripts$$textToBRF.class");                     \
 	rm("main.jar");                                     \
 	rm("jre-win64");                                    \
 	rm("jre-mac");                                      \
@@ -159,12 +159,12 @@ dist/win64 dist/mac : dist/% : jre-% main.jar $(DIST_CLASSPATH)
 
 main.jar : classpath.txt \
            main.class \
-           scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRL.class scripts$$odtToBraille.class \
+           scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRF.class scripts$$odtToBraille.class \
            odt2daisy.class odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class \
            odt2braille.class odt2braille$$Provider.class \
            META-INF/services/org.daisy.common.xproc.calabash.XProcStepProvider \
            META-INF/services/org.daisy.pipeline.script.XProcScriptService \
-           odt-to-dtbook.xpl text-to-ebraille.xpl text-to-brl.xpl odt2daisy.xpl odt2braille.xpl \
+           odt-to-dtbook.xpl text-to-ebraille.xpl text-to-brf.xpl odt2daisy.xpl odt2braille.xpl \
            braille.scss dedicon-default.scss
 	exec("jar cvfem $@ main $^".split("\\s+"));
 
@@ -180,7 +180,7 @@ classpath.txt : $(DIST_CLASSPATH)
 		 .append(" \n");                             \
 	write(f, s.toString());
 
-scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRL.class scripts$$odtToBraille.class : scripts.class
+scripts$$odtToDTBook.class scripts$$textToEbraille.class scripts$$textToBRF.class scripts$$odtToBraille.class : scripts.class
 	new File("$@").setLastModified(System.currentTimeMillis());
 odt2daisy$$1.class odt2daisy$$Step.class odt2daisy$$Step$$Provider.class : odt2daisy.class
 	new File("$@").setLastModified(System.currentTimeMillis());
@@ -227,7 +227,7 @@ OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8.zip :
 ODT := $(shell glob("odt/*.odt").forEach(System.out::println);)
 DTB := $(patsubst odt/%.odt,dtb/%,$(ODT))
 EBRAILLE := $(patsubst dtb/%,ebraille/%,$(DTB))
-BRL := $(patsubst dtb/%,brl/%,$(DTB))
+BRF := $(patsubst dtb/%,brf/%,$(DTB))
 
 .PHONY : check
 check : dtb/000100_headings
@@ -277,14 +277,14 @@ $(EBRAILLE) : ebraille/% : dtb/%
 	}                                                                                              \
 	job.close();
 
-check : brl/000100_headings
-$(BRL) : scripts$$textToBRL.class odt2daisy$$Step$$Provider.class
-$(BRL) : brl/% : dtb/%
+check : brf/000100_headings
+$(BRF) : scripts$$textToBRF.class odt2daisy$$Step$$Provider.class
+$(BRF) : brf/% : dtb/%
 	@System.setProperty("org.daisy.pipeline.logdir", "log");                                       \
 	ScriptRegistry scriptRegistry = ServiceLoader.load(ScriptRegistry.class).iterator().next();    \
 	JobFactory jobFactory = ServiceLoader.load(JobFactory.class).iterator().next();                \
 	Job job = jobFactory.newJob(                                                                   \
-		new BoundScript.Builder(scriptRegistry.getScript("text-to-brl").load())                    \
+		new BoundScript.Builder(scriptRegistry.getScript("text-to-brf").load())                    \
 		               .withInput("source", new File("$<", "$(notdir $<).xml").getAbsoluteFile())  \
 		               .withInput("stylesheet", new File("braille.scss").getAbsoluteFile())        \
 		               .withOption("stylesheet-parameters", "(dots:8)")                            \
@@ -335,5 +335,5 @@ dist-check : dist/mac
 	                                    "--dots", "8");
 	exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
 	                        "-jar", "$</main.jar",                                                     \
-	                        "brl", "odt/000600_simple_image.odt",                                      \
-	                               "dist-check/brl/000600_simple_image");
+	                        "brf", "odt/000600_simple_image.odt",                                      \
+	                               "dist-check/brf/000600_simple_image");

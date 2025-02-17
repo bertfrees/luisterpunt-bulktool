@@ -25,13 +25,13 @@ public final class scripts {
 		}
 	}
 
-	public static class textToBRL extends XProcScriptService {
+	public static class textToBRF extends XProcScriptService {
 
-		public textToBRL() {
-			activate(ImmutableMap.of(SCRIPT_URL,     "/text-to-brl.xpl",
-			                         SCRIPT_ID,      "text-to-brl",
+		public textToBRF() {
+			activate(ImmutableMap.of(SCRIPT_URL,     "/text-to-brf.xpl",
+			                         SCRIPT_ID,      "text-to-brf",
 			                         SCRIPT_VERSION, "1.0.0"),
-			         textToBRL.class);
+			         textToBRF.class);
 		}
 	}
 
@@ -41,7 +41,7 @@ public final class scripts {
 			activate(ImmutableMap.of(SCRIPT_URL,     "/odt2braille.xpl",
 			                         SCRIPT_ID,      "odt2braille",
 			                         SCRIPT_VERSION, "1.0.0"),
-			         textToBRL.class);
+			         odtToBraille.class);
 		}
 	}
 }
