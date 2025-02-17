@@ -4,7 +4,7 @@
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns:d="http://www.daisy.org/ns/pipeline/data"
                 xmlns:css="http://www.daisy.org/ns/pipeline/braille-css"
-                type="px:text-to-brl">
+                type="px:text-to-brf">
 
 	<p:option name="source" required="true" px:type="anyFileURI" px:media-type="application/vnd.oasis.opendocument.text application/x-dtbook+xml"/>
 	<p:option name="stylesheet" required="false" select="''" px:sequence="true" px:separator=" " px:type="anyFileURI" px:media-type="text/css text/x-scss"/>
@@ -90,7 +90,7 @@
 		</p:input>
 	</px:dtbook-to-pef>
 
-	<!-- PEF to BRL -->
+	<!-- PEF to BRF -->
 	<p:group>
 		<p:variable name="name" select="replace($source,'^.*/([^/]*)\.[^/\.]*$','$1')"/>
 		<px:pef-store>
@@ -101,7 +101,7 @@
 			                                           (line-breaks:dos)
 			                                           (pad:both)
 			                                           (charset:&quot;IBM00858&quot;)
-			                                           (file-extension:&quot;.brl&quot;)'"/>
+			                                           (file-extension:&quot;.brf&quot;)'"/>
 		</px:pef-store>
 	</p:group>
 
