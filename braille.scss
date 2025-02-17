@@ -29,6 +29,9 @@
 	 */
 	$duplex: false !default;
 
+	// _generate-toc.scss
+	$toc-depth: 2;
+
 	// use Dedicon's style sheet as base
 	// this style sheet is specific for Dedicon's source documents and pre-processing, but it is a good start
 	$show-print-page-numbers: true;
@@ -38,6 +41,7 @@
 	$vertical-position-title-page-footer: 1;
 	$use-resumed-functionality-in-toc: true; }
 
+	@import url("http://www.daisy.org/pipeline/modules/braille/dtbook-to-pef/_generate-toc.scss") embossed;
 	@import url("dedicon-default.scss") embossed;
 
 @media not embossed {
