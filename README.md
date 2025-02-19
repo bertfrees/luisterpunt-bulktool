@@ -37,6 +37,7 @@ are available:
 
 ## Build instructions
 
+    git submodule update --init --recursive
     make
 
 The command above compiles the code, creates an executable for Windows, runs tests on it, and
