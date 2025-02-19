@@ -1,12 +1,9 @@
-[submodule "libs/odt2daisy"]
-	path = libs/odt2daisy
-	url = https://github.com/odt2daisy/odt2daisy
 [submodule "lib/odt2daisy"]
 	path = lib/odt2daisy
-	url = https://github.com/odt2daisy/odt2daisy
+	url = https://github.com/bertfrees/odt2daisy
 [submodule "lib/JODL"]
 	path = lib/JODL
-	url = https://github.com/odt2daisy/JODL
+	url = https://github.com/bertfrees/JODL
 [submodule "lib/odt2braille"]
 	path = lib/odt2braille
 	url = https://github.com/bertfrees/odt2braille
