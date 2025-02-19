@@ -133,6 +133,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 			</p:input>
 		</px:fileset-load>
 
+		<!-- FIXME: add xmlns:epub="http://www.idpf.org/2007/ops" to root element and drop from other elements -->
+
 		<!-- Transcribe text to braille -->
 		<p:for-each>
 			<p:variable name="lang" select="(/*/@xml:lang,/*/@lang,'und')[1]"/>
@@ -142,6 +144,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 					<p:pipe step="stylesheet-parameters" port="result"/>
 				</p:input>
 			</px:apply-stylesheets>
+			<!--
+			    FIXME: also translate translatable attributes
+			    - https://html.spec.whatwg.org/#translatable-attributes
+			-->
 			<px:transform name="transform">
 				<p:with-option name="query" select="concat('(input:html)(input:css)(output:html)(output:braille)',
 				                                    '(document-locale:',$lang,')')"/>

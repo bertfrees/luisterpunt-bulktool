@@ -1,5 +1,7 @@
 include java-shell-for-make/enable-java-shell.mk
 
+MVN := $(CURDIR)/mvn.sh
+
 .PHONY : all
 all : check dist dist-check
 
@@ -50,7 +52,7 @@ MVN_LOCAL_REPOSITORY := $(shell                                                 
 		line -> {                                                                         \
 			Matcher m = p.matcher(line);                                                  \
 			if (m.find()) println(m.group(1)); },                                         \
-		"mvn", "org.apache.maven.plugins:maven-help-plugin:3.4.0:effective-settings");    )
+		"$(MVN)", "org.apache.maven.plugins:maven-help-plugin:3.4.0:effective-settings"); )
 ifeq ($(MVN_LOCAL_REPOSITORY),)
 $(error "Local Maven repository could not be determined")
 endif
@@ -84,7 +86,7 @@ LIBS := $(shell                                                                 
 				captureOutput(                                                              \
 					err::println,                                                           \
 					new File("lib/odt2braille"),                                            \
-					"$(MAKE)", "MVN=mvn -B", "install", "install-windows");                 \
+					"$(MAKE)", "MVN=$(MVN) -B", "install", "install-windows");              \
 			if (rv != 0) {                                                                  \
 				err.println(output);                                                        \
 				err.println("Failed to compile odt2braille");                               \
@@ -96,7 +98,7 @@ LIBS := $(shell                                                                 
 			captureOutput(                                                                  \
 				err::println,                                                               \
 				new File("lib"),                                                            \
-				"mvn", "-B",                                                                \
+				"$(MVN)", "-B",                                                             \
 				"org.apache.maven.plugins:maven-dependency-plugin:3.0.0:copy-dependencies", \
 				"-DoutputDirectory=.");                                                     \
 		if (rv != 0) {                                                                      \
@@ -198,6 +200,7 @@ braille.scss : dedicon-default.scss
 dedicon-default.scss :
 	cp(new URL("https://bitbucket.org/dedicon/pip/raw/9544e2bf1c/src/main/resources/css/$@"), new File("$@"));
 
+# FIXME: only works on macOS
 .INTERMEDIATE : jre-mac jre-win64
 jre-win64 : OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8/jdk-11.0.13+8
 jre-win64 jre-mac : OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8/jdk-11.0.13+8
@@ -271,6 +274,11 @@ $(EBRAILLE) : ebraille/% : dtb/%
 		               .build()).build().get();                                                    \
 	job.run();                                                                                     \
 	if (job.getStatus() != Job.Status.SUCCESS) {                                                   \
+		/*for (org.daisy.common.messaging.Message m :                                              \
+				job.getMonitor().getMessageAccessor().createFilter()                               \
+				                .filterLevels(Collections.singleton(org.daisy.common.messaging.Message.Level.INFO)) \
+				                .getMessages())                                                    \
+			err.println(m.getText());*/                                                            \
 		throw new RuntimeException("Job finished with status " + job.getStatus() + "\n"            \
 			+ "Job files have not been deleted: " + new File(job.getLogFile()).getParentFile()); } \
 	rm("$@");                                                                                      \
@@ -281,8 +289,10 @@ $(EBRAILLE) : ebraille/% : dtb/%
 	}                                                                                              \
 	job.close();
 
+# FIXME: this is broken because dedicon-default.scss depends on code that extracts stylesheet parameters
+# from braille.scss
 check : brf/000100_headings
-$(BRF) : scripts$$textToBRF.class odt2daisy$$Step$$Provider.class
+$(BRF) : scripts$$textToBRF.class odt2daisy$$Step$$Provider.class braille.scss
 $(BRF) : brf/% : dtb/%
 	@System.setProperty("org.daisy.pipeline.logdir", "log");                                       \
 	ScriptRegistry scriptRegistry = ServiceLoader.load(ScriptRegistry.class).iterator().next();    \
@@ -323,21 +333,65 @@ xprocspec : odt2daisy$$Step$$Provider.class
 .PHONY : dist-check
 dist-check : dist/mac
 	rm("dist-check");                                                                                  \
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "dtbook", "odt/000600_simple_image.odt",                                   \
+	//                                  "dist-check/dtb/000600_simple_image");
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "ebraille", "dist-check/dtb/000600_simple_image/000600_simple_image.xml",  \
+	//                                    "dist-check/ebraille/000600_simple_image",                     \
+	//                                    "--dots", "6");
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "ebraille", "odt/000600_simple_image.odt",                                 \
+	//                                    "dist-check/ebraille/000600_simple_image_8",                   \
+	//                                    "--dots", "8");
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "ebraille", "odt/15008_braille_Het_begint_ergens.odt",                     \
+	//                                    "dist-check/ebraille/15008_braille_Het_begint_ergens",         \
+	//                                    "--dots", "6");
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "ebraille", "odt/15009_braille_Het_weer_van_gisteren.odt",                 \
+	//                                    "dist-check/ebraille/15009_braille_Het_weer_van_gisteren",     \
+	//                                    "--dots", "6");
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "ebraille", "odt/15010_braille_Krokodil_van_de_aanslagen.odt",             \
+	//                                    "dist-check/ebraille/15010_braille_Krokodil_van_de_aanslagen", \
+	//                                    "--dots", "6");
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "ebraille", "odt/15011_braille_Rocco_de_autobiografie.odt",                \
+	//                                    "dist-check/ebraille/15011_braille_Rocco_de_autobiografie",    \
+	//                                    "--dots", "6");
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "ebraille", "odt/15012_braille_De_verloren_stad_Z.odt",                    \
+	//                                    "dist-check/ebraille/15012_braille_De_verloren_stad_Z",        \
+	//                                    "--dots", "6");
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "brl", "odt/000600_simple_image.odt",                                      \
+	//                               "dist-check/brl/000600_simple_image");
+	//exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "brl", "odt/15008_braille_Het_begint_ergens.odt",                          \
+	//                               "dist-check/brl/15008_braille_Het_begint_ergens",                   \
+	//                               "--capital-letters", "false",                                       \
+	//                               "--duplex", "true");
 	exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
 	                        "-jar", "$</main.jar",                                                     \
-	                        "dtbook", "odt/000600_simple_image.odt",                                   \
-	                                  "dist-check/dtb/000600_simple_image");
+	                        "brf", "dtb/370041/370041.xml",                                            \
+	                               "dist-check/brf/370041");
 	exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
 	                        "-jar", "$</main.jar",                                                     \
-	                        "ebraille", "dist-check/dtb/000600_simple_image/000600_simple_image.xml",  \
-	                                    "dist-check/ebraille/000600_simple_image",                     \
-	                                    "--dots", "6");
-	exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
-	                        "-jar", "$</main.jar",                                                     \
-	                        "ebraille", "odt/000600_simple_image.odt",                                 \
-	                                    "dist-check/ebraille/000600_simple_image_8",                   \
-	                                    "--dots", "8");
-	exec("$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
-	                        "-jar", "$</main.jar",                                                     \
-	                        "brf", "odt/000600_simple_image.odt",                                      \
-	                               "dist-check/brf/000600_simple_image");
+	                        "brl", "odt/15008_braille_Het_begint_ergens.odt",                          \
+	                               "dist-check/brl/15008_braille_Het_begint_ergens");
+	//exec(env("ODT2BRAILLE", "true"),                                                                   \
+	//     "$</jre/bin/java", "-Dorg.daisy.pipeline.logdir=log",                                         \
+	//                        "-jar", "$</main.jar",                                                     \
+	//                        "brl", "odt/15008_braille_Het_begint_ergens.odt",                          \
+	//                               "dist-check/brl/15008_braille_Het_begint_ergens_odt2braille");

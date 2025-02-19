@@ -29,6 +29,10 @@
 	 */
 	$duplex: false !default;
 
+	//:root {
+	//	hyphens: manual;
+	//}
+
 	// use Dedicon's style sheet as base
 	// this style sheet is specific for Dedicon's source documents and pre-processing, but it is a good start
 	$show-print-page-numbers: true;
