@@ -79,22 +79,22 @@
 	 */
 	$dots: 6 !default;
 
-	@text-transform {
+	@-daisy-text-transform {
 		system: braille;
 		language: nl;
 		type: if($dots == 6, literary, computer);
 	}
 
 	em, i {
-		text-transform: -louis-italic;
+		-daisy-text-transform: -louis-italic;
 	}
 
 	strong, b {
-		text-transform: -louis-bold;
+		-daisy-text-transform: -louis-bold;
 	}
 
 	u {
-		text-transform: -louis-underline;
+		-daisy-text-transform: -louis-underline;
 	}
 
 	/**
@@ -104,7 +104,7 @@
 
 	@if $capital-letters != true {
 		:root {
-			text-transform: lowercase;
+			-daisy-text-transform: lowercase;
 		}
 	}
 }

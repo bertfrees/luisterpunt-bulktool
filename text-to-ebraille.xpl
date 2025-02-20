@@ -55,12 +55,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 	<p:import href="http://www.daisy.org/pipeline/modules/braille/common-utils/library.xpl">
 		<p:documentation>
 			px:transform
-			px:apply-stylesheets
 			px:parse-query
 		</p:documentation>
 	</p:import>
 	<p:import href="http://www.daisy.org/pipeline/modules/css-utils/library.xpl">
 		<p:documentation>
+			px:css-cascade
 			px:css-detach
 		</p:documentation>
 	</p:import>
@@ -136,12 +136,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 		<!-- Transcribe text to braille -->
 		<p:for-each>
 			<p:variable name="lang" select="(/*/@xml:lang,/*/@lang,'und')[1]"/>
-			<px:apply-stylesheets type="text/css text/x-scss" media="braille" name="html-with-css">
-				<p:with-option name="stylesheets" select="$stylesheet"/>
+			<px:css-cascade type="text/css text/x-scss" media="braille" name="html-with-css">
+				<p:with-option name="user-stylesheet" select="$stylesheet"/>
 				<p:input port="parameters">
 					<p:pipe step="stylesheet-parameters" port="result"/>
 				</p:input>
-			</px:apply-stylesheets>
+			</px:css-cascade>
 			<px:transform name="transform">
 				<p:with-option name="query" select="concat('(input:html)(input:css)(output:html)(output:braille)',
 				                                    '(document-locale:',$lang,')')"/>

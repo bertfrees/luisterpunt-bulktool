@@ -39,8 +39,8 @@ import org.daisy.common.messaging.Message.Level;
 import org.daisy.common.messaging.ProgressMessage;
 import org.daisy.pipeline.braille.common.Query;
 import org.daisy.pipeline.css.Medium;
-import org.daisy.pipeline.css.sass.SassAnalyzer;
-import org.daisy.pipeline.css.sass.SassAnalyzer.SassVariable;
+import org.daisy.pipeline.css.CssAnalyzer;
+import org.daisy.pipeline.css.CssAnalyzer.SassVariable;
 import org.daisy.pipeline.script.BoundScript;
 import org.daisy.pipeline.script.ScriptInput;
 import org.daisy.pipeline.script.ScriptRegistry;
@@ -190,9 +190,9 @@ public class main {
 						//	medium = medium + " AND (width: " + pageWidth + ") AND (height: " + pageHeight + ")";
 						//}
 
-						for (SassVariable v : new SassAnalyzer(Medium.parse(medium), null, null)
-						                                      .analyze(i.getInput("stylesheet"), xml)
-						                                      .getVariables()) {
+						for (SassVariable v : new CssAnalyzer(Medium.parse(medium), null, null)
+						                                     .analyze(i.getInput("stylesheet"), xml)
+						                                     .getVariables()) {
 							String key = v.getName();
 							if (v.isDefault()) {
 								if (options.containsKey(key))
