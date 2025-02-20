@@ -1,5 +1,7 @@
 include java-shell-for-make/enable-java-shell.mk
 
+MVN := mvn
+
 .PHONY : all
 all : check dist dist-check
 
@@ -50,7 +52,7 @@ MVN_LOCAL_REPOSITORY := $(shell                                                 
 		line -> {                                                                         \
 			Matcher m = p.matcher(line);                                                  \
 			if (m.find()) println(m.group(1)); },                                         \
-		"mvn", "org.apache.maven.plugins:maven-help-plugin:3.4.0:effective-settings");    )
+		"$(MVN)", "org.apache.maven.plugins:maven-help-plugin:3.4.0:effective-settings"); )
 ifeq ($(MVN_LOCAL_REPOSITORY),)
 $(error "Local Maven repository could not be determined")
 endif
@@ -84,7 +86,7 @@ LIBS := $(shell                                                                 
 				captureOutput(                                                              \
 					err::println,                                                           \
 					new File("lib/odt2braille"),                                            \
-					"$(MAKE)", "MVN=mvn -B", "install", "install-windows");                 \
+					"$(MAKE)", "MVN=$(MVN) -B", "install", "install-windows");              \
 			if (rv != 0) {                                                                  \
 				err.println(output);                                                        \
 				err.println("Failed to compile odt2braille");                               \
@@ -96,7 +98,7 @@ LIBS := $(shell                                                                 
 			captureOutput(                                                                  \
 				err::println,                                                               \
 				new File("lib"),                                                            \
-				"mvn", "-B",                                                                \
+				"$(MVN)", "-B",                                                             \
 				"org.apache.maven.plugins:maven-dependency-plugin:3.0.0:copy-dependencies", \
 				"-DoutputDirectory=.");                                                     \
 		if (rv != 0) {                                                                      \
@@ -203,7 +205,7 @@ dedicon-default.scss :
 jre-win64 : OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4/jdk-11.0.26+4
 jre-win64 jre-mac : OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4/jdk-11.0.26+4
 	exec(env("JAVA_HOME", "$(CURDIR)/$</Contents/Home"),                       \
-	     "mvn", "-B", "-f", "build-jre.xml", "jlink:jlink", "-Pbuild-$@");
+	     "$(MVN)", "-B", "-f", "build-jre.xml", "jlink:jlink", "-Pbuild-$@");
 	mkdirs("$(dir $@)");                                                       \
 	rm("$@");                                                                  \
 	mv("target/maven-jlink/classifiers/$(patsubst jre-%,%,$@)", "$@");         \
