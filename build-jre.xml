@@ -51,7 +51,7 @@
                 <configuration>
                   <classifier>mac</classifier>
                   <modulePaths>
-                    <modulePath>OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8/jdk-11.0.13+8/Contents/Home/jmods</modulePath>
+                    <modulePath>OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4/jdk-11.0.26+4/Contents/Home/jmods</modulePath>
                   </modulePaths>
                 </configuration>
               </execution>
@@ -72,7 +72,7 @@
                 <configuration>
                   <classifier>win64</classifier>
                   <modulePaths>
-                    <modulePath>OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8/jdk-11.0.13+8/jmods</modulePath>
+                    <modulePath>OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4/jdk-11.0.26+4/jmods</modulePath>
                   </modulePaths>
                 </configuration>
               </execution>
