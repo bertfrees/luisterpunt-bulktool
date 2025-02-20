@@ -23,7 +23,7 @@
       <groupId>be.docarch</groupId>
       <artifactId>odt2braille-liblouis</artifactId>
       <version>${odt2braille.version}</version>
-      <classifier>macosx_x86_64</classifier>
+      <classifier>macosx_aarch64</classifier>
       <type>zip</type>
     </dependency>
     <dependency>

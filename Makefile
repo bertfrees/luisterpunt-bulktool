@@ -5,8 +5,8 @@ all : check dist dist-check
 
 .PHONY : clean
 clean : mostlyclean
-	rm("OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8");     \
-	rm("OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8");
+	rm("OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4");     \
+	rm("OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4");
 
 .PHONY : mostlyclean
 mostlyclean :
@@ -76,7 +76,7 @@ LIBS := $(shell                                                                 
 		if (!new File(d, "/odt2braille-core/"     + v +                                     \
 		                 "/odt2braille-core-"     + v + ".jar").exists() ||                 \
 		    !new File(d, "/odt2braille-liblouis/" + v +                                     \
-		                 "/odt2braille-liblouis-" + v + "-macosx_x86_64.zip").exists() ||   \
+		                 "/odt2braille-liblouis-" + v + "-macosx_aarch64.zip").exists() ||  \
 		    !new File(d, "/odt2braille-liblouis/" + v +                                     \
 		                 "/odt2braille-liblouis-" + v + "-windows_x86.zip").exists()) {     \
 			StringWriter output = new StringWriter();                                       \
@@ -151,7 +151,7 @@ dist/win64 dist/mac : dist/% : jre-% main.jar $(DIST_CLASSPATH)
 	mkdirs("$@/lib/odt2braille-resources");                           \
 	unzip(new File("lib/odt2braille-liblouis-$(ODT2BRAILLE_VERSION)-" \
 	               + ("$@".endsWith("mac")                            \
-	                     ? "macosx_x86_64"                            \
+	                     ? "macosx_aarch64"                           \
 	                     : "windows_x86")                             \
 	               + ".zip"),                                         \
 	               new File("$@/lib/odt2braille-resources"));         \
@@ -200,8 +200,8 @@ dedicon-default.scss :
 	cp(new URL("https://bitbucket.org/dedicon/pip/raw/9544e2bf1c/src/main/resources/css/$@"), new File("$@"));
 
 .INTERMEDIATE : jre-mac jre-win64
-jre-win64 : OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8/jdk-11.0.13+8
-jre-win64 jre-mac : OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8/jdk-11.0.13+8
+jre-win64 : OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4/jdk-11.0.26+4
+jre-win64 jre-mac : OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4/jdk-11.0.26+4
 	exec(env("JAVA_HOME", "$(CURDIR)/$</Contents/Home"),                       \
 	     "mvn", "-B", "-f", "build-jre.xml", "jlink:jlink", "-Pbuild-$@");
 	mkdirs("$(dir $@)");                                                       \
@@ -209,24 +209,24 @@ jre-win64 jre-mac : OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8/jdk-11.0.13+8
 	mv("target/maven-jlink/classifiers/$(patsubst jre-%,%,$@)", "$@");         \
 	rm("target");
 
-OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8/jdk-11.0.13+8 : %/jdk-11.0.13+8 : | %.tar.gz
+OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4/jdk-11.0.26+4 : %/jdk-11.0.26+4 : | %.tar.gz
 	mkdirs("$(dir $@)"); \
-	exec("tar", "-zxvf", "OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8.tar.gz", "-C", "$(dir $@)/");
+	exec("tar", "-zxvf", "OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4.tar.gz", "-C", "$(dir $@)/");
 
-OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8/jdk-11.0.13+8 : %/jdk-11.0.13+8 : %.zip
+OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4/jdk-11.0.26+4 : %/jdk-11.0.26+4 : %.zip
 	mkdirs("$(dir $@)"); \
 	unzip(new File("$<"), new File("$(dir $@)"));
 
-.INTERMEDIATE : OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8.tar.gz
-OpenJDK11U-jdk_x64_mac_hotspot_11.0.13_8.tar.gz :
+.INTERMEDIATE : OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4.tar.gz
+OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4.tar.gz :
 	mkdirs("$(dir $@)");                                                                                           \
-	copy(new URL("https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.13%2B8/$(notdir $@)"), \
+	copy(new URL("https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.26%2B4/$(notdir $@)"), \
 	     new File("$@"));
 
-.INTERMEDIATE : OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8.zip
-OpenJDK11U-jdk_x64_windows_hotspot_11.0.13_8.zip :
+.INTERMEDIATE : OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4.zip
+OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4.zip :
 	mkdirs("$(dir $@)");                                                                                           \
-	copy(new URL("https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.13%2B8/$(notdir $@)"), \
+	copy(new URL("https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.26%2B4/$(notdir $@)"), \
 	     new File("$@"));
 
 ODT := $(shell glob("odt/*.odt").forEach(System.out::println);)
