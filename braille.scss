@@ -25,9 +25,9 @@
 	/**
 	 * @var boolean $duplex
 	 *
- 	 * Dubbelzijdig
+	 * Dubbelzijdig
 	 */
-	$duplex: false !default;
+	$duplex: true !default;
 
 	// _generate-toc.scss
 	$toc-depth: 2;
