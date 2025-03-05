@@ -32,6 +32,9 @@
 	// _generate-toc.scss
 	$toc-depth: 2;
 
+	// _volume-breaking.scss
+	$maximum-number-of-sheets: 36;
+
 	// use Dedicon's style sheet as base
 	// this style sheet is specific for Dedicon's source documents and pre-processing, but it is a good start
 	$show-print-page-numbers: true;
