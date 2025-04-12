@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.function.Consumer;
@@ -133,17 +134,13 @@ public class main {
 		}
 		File source = new File(args[1]).getAbsoluteFile();
 		File outputDir = new File(args[2]).getAbsoluteFile();
-		File logFile = new File(outputDir, new SimpleDateFormat("yyMMddHHmmss").format(new Date()) + ".log");
 		if (!source.exists())
 
 			// FIXME: add code to regenerate files when sources are newer
 
 			throw new IllegalArgumentException("file does not exist: " + source);
-		if (outputDir.exists())
-			if (!outputDir.isDirectory())
-				throw new IllegalArgumentException("file exists: " + outputDir);
-			else if (outputDir.listFiles().length > 0)
-				throw new IllegalArgumentException("directory is not empty: " + outputDir);
+		if (outputDir.exists() && !outputDir.isDirectory())
+			throw new IllegalArgumentException("file exists: " + outputDir);
 		boolean success = false;
 		try {
 			ScriptRegistry scriptRegistry = ServiceLoader.load(ScriptRegistry.class).iterator().next();
@@ -236,19 +233,45 @@ public class main {
 						Thread.sleep(1000);
 					}
 				}
-				logFile.getParentFile().mkdirs();
-				try (InputStream is = new FileInputStream(new File(job.getLogFile()));
-				     OutputStream os = new FileOutputStream(logFile)) {
-					byte data[] = new byte[1024];
-					int read;
-					while ((read = is.read(data)) != -1)
-						os.write(data, 0, read);
-				}
 				if (success = (job.getStatus() == Job.Status.SUCCESS)) {
-					for (JobResult r : job.getResults().getResults("result")) {
+					Collection<JobResult> results = job.getResults().getResults("result");
+					boolean someFilesExist = false;
+					for (JobResult r : results) {
+						File f = new File(outputDir, r.strip().getIdx());
+						if (f.exists()) {
+							someFilesExist = true;
+							break;
+						}
+					}
+					if (someFilesExist && results.size() != 1)
+						for (int i = 2; true; i++) {
+							File f = new File(outputDir.getParentFile(), outputDir.getName() + " (" + i + ")");
+							if (!f.exists()) {
+								System.err.println(
+									"WARNING: storing results in " + f.getName()
+									+ " because some files in " + outputDir.getName() + " would be overwritten");
+								outputDir = f;
+								break;
+							}
+						}
+					for (JobResult r : results) {
 						File f = new File(outputDir, r.strip().getIdx());
 						if (f.exists())
-							throw new IllegalStateException("file exists: " + f); // should normally not happen
+							if (results.size() == 1)
+								for (int i = 2; true; i++) {
+									String nameWithoutExtension = f.getName().replaceAll("\\.[^.]+$", "");
+									String extension = f.getName().substring(nameWithoutExtension.length());
+									File ff = new File(f.getParentFile(), nameWithoutExtension + " (" + i + ")" + extension);
+									if (!ff.exists()) {
+										System.err.println(
+											"WARNING: storing result to " + ff.getName()
+											+ " because " + f.getName() + " would be overwritten");
+										f = ff;
+										break;
+									}
+								}
+							else
+								throw new IllegalStateException("file exists: " + f); // should normally not happen
 						f.getParentFile().mkdirs();
 						try (InputStream is = r.asStream();
 						     OutputStream os = new FileOutputStream(f)) {
@@ -258,6 +281,15 @@ public class main {
 								os.write(data, 0, read);
 						}
 					}
+				}
+				File logFile = new File(outputDir, new SimpleDateFormat("yyMMddHHmmss").format(new Date()) + ".log");
+				logFile.getParentFile().mkdirs();
+				try (InputStream is = new FileInputStream(new File(job.getLogFile()));
+				     OutputStream os = new FileOutputStream(logFile)) {
+					byte data[] = new byte[1024];
+					int read;
+					while ((read = is.read(data)) != -1)
+						os.write(data, 0, read);
 				}
 			}
 		} catch (Throwable e) {
