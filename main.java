@@ -16,6 +16,7 @@
  */
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
@@ -23,8 +24,10 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.function.Consumer;
 import java.util.HashMap;
 import java.util.List;
@@ -130,6 +133,7 @@ public class main {
 		}
 		File source = new File(args[1]).getAbsoluteFile();
 		File outputDir = new File(args[2]).getAbsoluteFile();
+		File logFile = new File(outputDir, new SimpleDateFormat("yyMMddHHmmss").format(new Date()) + ".log");
 		if (!source.exists())
 
 			// FIXME: add code to regenerate files when sources are newer
@@ -231,6 +235,14 @@ public class main {
 					default:
 						Thread.sleep(1000);
 					}
+				}
+				logFile.getParentFile().mkdirs();
+				try (InputStream is = new FileInputStream(new File(job.getLogFile()));
+				     OutputStream os = new FileOutputStream(logFile)) {
+					byte data[] = new byte[1024];
+					int read;
+					while ((read = is.read(data)) != -1)
+						os.write(data, 0, read);
 				}
 				if (success = (job.getStatus() == Job.Status.SUCCESS)) {
 					for (JobResult r : job.getResults().getResults("result")) {
