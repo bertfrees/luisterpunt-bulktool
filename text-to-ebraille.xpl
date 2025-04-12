@@ -114,9 +114,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 	</px:dtbook-to-zedai>
 
 	<!-- ZedAI to HTML -->
-	<px:zedai-to-html name="html" px:progress="1/3">
-		<p:input port="in-memory.in">
+
+	<px:fileset-filter href="zedai-mods.xml" name="filter-mods">
+	  <p:input port="source.in-memory">
 			<p:pipe step="zedai" port="result.in-memory"/>
+		</p:input>
+	</px:fileset-filter>
+	<p:sink/>
+
+	<px:zedai-to-html name="html" px:progress="1/3">
+		<p:input port="fileset.in">
+			<p:pipe step="filter-mods" port="not-matched"/>
+		</p:input>
+		<p:input port="in-memory.in">
+			<p:pipe step="filter-mods" port="not-matched.in-memory"/>
 		</p:input>
 		<p:with-option name="output-dir" select="$result"/>
 	</px:zedai-to-html>
