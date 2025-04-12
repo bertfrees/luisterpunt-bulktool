@@ -33,7 +33,13 @@
 	$toc-depth: 2;
 
 	// _volume-breaking.scss
-	$maximum-number-of-sheets: 36;
+
+	/**
+	 * @var integer $maximum-number-of-sheets
+	 *
+	 * Maximaal aantal bladen per band
+	 */
+	$maximum-number-of-sheets: 36 !default;
 
 	// use Dedicon's style sheet as base
 	// this style sheet is specific for Dedicon's source documents and pre-processing, but it is a good start
