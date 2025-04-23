@@ -7,13 +7,18 @@
 `FORMAT` is the output format. It must be one of the following:
 
 - `dtbook`: DAISY XML
-- `brf`: braille file for embossing
+- `brf`: braille file for embossing. Page dimensions are fixed to 30 cells per line and 28 lines per
+  page.
 - `ebraille`: HTML with Unicode braille text (for electronic braille reading)
 
 `FILE` is the input file. The supported input file formats (determined by the file extension) are:
 
 - `.odt` (OpenDocument Text)
 - `.xml` (DAISY XML) (only for the `brf` and `ebraille` output formats)
+
+`DIRECTORY` is the output directory. It is allowed to specify an existing directory, however when
+some files would be overwritten by new output files, a new directory with a derived name is created
+instead, or in case the output consists of a single file, the file will get a derived name.
 
 The following parameters can be specified:
 
@@ -30,6 +35,9 @@ The following parameters can be specified:
 are available:
 
 - `-Dorg.daisy.pipeline.logdir=DIRECTORY`: specify the location for log files
+
+In addition to the main log files, a log file will be created for each conversion and included in
+the output directory.
 
 ## Build prerequisites
 
