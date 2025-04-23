@@ -21,9 +21,10 @@ The following parameters can be specified:
   output formats)
 - `duplex`: `true` (default) or `false`: emboss on both sides of the paper or not (only for the
   `brf` output format)
-- `maximum-number-of-sheets`: maximum number of sheets a volume may contain
-- `capital-letters`: `true` (default) or `false`: mark capital letters in braille or not (only for the `brf`
-  and `ebraille` output formats)
+- `maximum-number-of-sheets`: maximum number of sheets a volume may contain (default 36 - only for
+  the `brf` output format)
+- `capital-letters`: `true` (default) or `false`: mark capital letters in braille or not (only for
+  the `brf` and `ebraille` output formats)
 
 `JAVA_OPTIONS` are optional arguments passed to the Java runtime environment. The following options
 are available:

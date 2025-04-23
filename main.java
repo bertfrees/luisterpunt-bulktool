@@ -182,7 +182,7 @@ public class main {
 						Source xml = source.getName().endsWith(".xml")
 							? i.getInput("source").iterator().next()
 							: null;
-						String medium = "embossed";
+						String medium = "brf".equals(command) ? "embossed" : "braille";
 
 						// not adding page width and height to medium because they are defined in the CSS
 						//if ("brf".equals(command)) {
