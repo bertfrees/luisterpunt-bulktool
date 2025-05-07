@@ -1,6 +1,10 @@
 include java-shell-for-make/enable-java-shell.mk
 
+ifeq ($(OS), WINDOWS)
+MVN := mvn.cmd
+else
 MVN := mvn
+endif
 
 ANT := $(shell                                                                                 \
 	File antFile = new File(new File("apache-ant-1.10.15/bin"),                                \
@@ -65,7 +69,7 @@ MVN_LOCAL_REPOSITORY := $(shell                                                 
 	captureOutput(                                                                        \
 		line -> {                                                                         \
 			Matcher m = p.matcher(line);                                                  \
-			if (m.find()) println(m.group(1)); },                                         \
+			if (m.find()) println(m.group(1).replace("\\", "/")); },                      \
 		"$(MVN)", "org.apache.maven.plugins:maven-help-plugin:3.4.0:effective-settings"); )
 ifeq ($(MVN_LOCAL_REPOSITORY),)
 $(error "Local Maven repository could not be determined")
@@ -121,8 +125,8 @@ LIBS := $(shell                                                                 
 			exit(rv); }}                                                                    \
 	println("lib/JODL/dist/JODL.jar");                                                      \
 	println("lib/odt2daisy/dist/odt2daisy.jar");                                            \
-	glob("lib/odt2daisy/lib/*.jar").forEach(System.out::println);                           \
-	glob("lib/*.jar").forEach(System.out::println);                                         )
+	glob("lib/odt2daisy/lib/*.jar").forEach(x -> println(x.getPath().replace("\\", "/")));  \
+	glob("lib/*.jar").forEach(x -> println(x.getPath().replace("\\", "/")));                )
 ifeq ($(LIBS),)
 $(error "Failed to set up classpath")
 endif
@@ -217,8 +221,11 @@ dedicon-default.scss :
 
 .INTERMEDIATE : jre-mac jre-win64
 jre-win64 : OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4/jdk-11.0.26+4
-jre-win64 jre-mac : OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4/jdk-11.0.26+4
-	exec(env("JAVA_HOME", "$(CURDIR)/$</Contents/Home"),                       \
+jre-mac : OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4/jdk-11.0.26+4
+jre-win64 jre-mac :
+	exec(env("JAVA_HOME", getOS() == OS.WINDOWS                                                                    \
+	                      ? "$(CURDIR)/OpenJDK11U-jdk_x64_windows_hotspot_11.0.26_4/jdk-11.0.26+4"                 \
+	                      : "$(CURDIR)/OpenJDK11U-jdk_aarch64_mac_hotspot_11.0.26_4/jdk-11.0.26+4/Contents/Home"), \
 	     "$(MVN)", "-B", "-f", "build-jre.xml", "jlink:jlink", "-Pbuild-$@");
 	mkdirs("$(dir $@)");                                                       \
 	rm("$@");                                                                  \
