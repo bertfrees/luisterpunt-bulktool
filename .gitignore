@@ -1,4 +1,5 @@
 .DS_Store
+/apache-ant-1.10.15
 /dedicon-default.scss
 /lib/*.jar
 /lib/*.zip

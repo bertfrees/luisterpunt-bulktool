@@ -2,6 +2,20 @@ include java-shell-for-make/enable-java-shell.mk
 
 MVN := mvn
 
+ANT := $(shell                                                                                 \
+	File antFile = new File(new File("apache-ant-1.10.15/bin"),                                \
+	                        getOS() == OS.WINDOWS ? "ant.bat" : "ant");                        \
+	if (!antFile.exists()) {                                                                   \
+		File tmpZip = new File("ant.zip");                                                     \
+		try {                                                                                  \
+			rm(tmpZip);                                                                        \
+			copy(new URL("https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.15-bin.zip"), \
+			     tmpZip);                                                                      \
+			unzip(tmpZip, new File(".")); }                                                    \
+		finally {                                                                              \
+			rm(tmpZip); }}                                                                     \
+	println(antFile.getAbsolutePath().replace("\\", "/"));                                     )
+
 .PHONY : all
 all : check dist dist-check
 
@@ -40,7 +54,7 @@ mostlyclean :
 	rm("ebraille");                                     \
 	rm("log");                                          \
 	rm("xprocspec-reports");                            \
-	exec(new File("lib/odt2daisy"), "ant", "clean");
+	exec(new File("lib/odt2daisy"), "$(ANT)", "clean");
 	glob("lib/odt2braille/**/target/**").forEach(x -> rm(x));
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -67,7 +81,7 @@ LIBS := $(shell                                                                 
 			captureOutput(                                                                  \
 				err::println,                                                               \
 				new File("lib/odt2daisy"),                                                  \
-				"ant", "jar");                                                              \
+				"$(ANT)", "jar");                                                           \
 		if (rv != 0) {                                                                      \
 			err.println(output);                                                            \
 			err.println("Failed to compile odt2daisy");                                     \
