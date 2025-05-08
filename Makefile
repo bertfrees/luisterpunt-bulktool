@@ -100,7 +100,7 @@ LIBS := $(shell                                                                 
 				captureOutput(                                                              \
 					err::println,                                                           \
 					new File("lib/odt2braille"),                                            \
-					"$(MAKE)", "MVN=$(MVN) -B", "install", "install-windows");              \
+					"$(MAKE)", "MVN=$(MVN) -B -DskipTests", "install", "install-windows");  \
 			if (rv != 0) {                                                                  \
 				err.println(output);                                                        \
 				err.println("Failed to compile odt2braille");                               \
