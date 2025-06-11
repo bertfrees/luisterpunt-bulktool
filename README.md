@@ -26,7 +26,7 @@ The following parameters can be specified:
   output formats)
 - `duplex`: `true` (default) or `false`: emboss on both sides of the paper or not (only for the
   `brf` output format)
-- `maximum-number-of-sheets`: maximum number of sheets a volume may contain (default 36 - only for
+- `maximum-number-of-sheets`: maximum number of sheets a volume may contain (default 36 sheets/70 pages - only for
   the `brf` output format)
 - `capital-letters`: `true` (default) or `false`: mark capital letters in braille or not (only for
   the `brf` and `ebraille` output formats)
